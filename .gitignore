@@ -1,0 +1,16 @@
+.DS_Store
+.vscode
+.python-version
+.idea/
+.coverage
+*.dat
+*.ipynb_checkpoints
+*.jupyter_cache
+_build
+__pycache__/
+docs/build/
+*.egg-info/
+dist/
+build/
+coverage.xml
+jupyter_execute/
