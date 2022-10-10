@@ -26,35 +26,35 @@ with open("dev_requirements.txt") as f:
     dev_requirements = f.read().splitlines()
 
 # Save the source code in _version.py.
-with open("pypackage/_version.py", "r") as f:
+with open("bgls/_version.py", "r") as f:
     version_file_source = f.read()
 
 # Overwrite _version.py in the source distribution.
-with open("pypackage/_version.py", "w") as f:
+with open("bgls/_version.py", "w") as f:
     f.write(f"__version__ = '{__version__}'\n")
 
 setup(
-    name="pypackage",
+    name="bgls",
     version=__version__,
     install_requires=requirements,
     extras_require={"development": set(dev_requirements)},
     packages=find_packages(),
     include_package_data=True,
-    description="A template Python Package hosted on GitHub.",
+    description="Implementation of the gate-by-gate sampling algorithm.",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
-    author="Ryan LaRose",
-    author_email="rlarose@umich.edu",
+    author="Alex Shapiro",
+    author_email="alexander.shapiro@epfl.ch",
     license="Apache 2.0",
-    url="https://github.com/rmlarose/PyPackage/",
+    url="https://github.com/asciineuron/bgls",
     project_urls={
-        "Bug Tracker": "https://github.com/rmlarose/PyPackage/issues/",
-        "Documentation": "https://github.com/rmlarose/PyPackage/",
-        "Source": "https://github.com/rmlarose/PyPackage/",
+        "Bug Tracker": "https://github.com/asciineuron/bglsissues/",
+        "Documentation": "https://github.com/asciineuron/bgls",
+        "Source": "https://github.com/asciineuron/bgls",
     },
     python_requires=">=3.7",
 )
 
 # Restore _version.py to its previous state.
-with open("pypackage/_version.py", "w") as f:
+with open("bgls/_version.py", "w") as f:
     f.write(version_file_source)
