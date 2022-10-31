@@ -8,9 +8,10 @@ from module import bgls_simulator
 q0, q1, q2 = cirq.LineQubit.range(3)
 circuit = cirq.Circuit(
     cirq.H(q0),
-    cirq.CNOT(q0,q1),
-    cirq.CNOT(q1,q2),
-    # works equally well since all we need is a single measurement of all qubits:
+    cirq.CNOT(q0, q1),
+    cirq.CNOT(q1, q2),
+    # works equally well since all we need is a single measurement of all
+    # qubits:
     cirq.measure([q0, q1, q2], key='result')
 )
 
