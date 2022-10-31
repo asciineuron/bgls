@@ -89,7 +89,8 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
                 probs = [abs(state[int("".join(bits), 2)]) ** 2 for bits in
                          candidates]
 
-                # Sample from the candidate bitstrings and update the bitstring.
+                # Sample from the candidate bitstrings and update the
+                # bitstring.
                 bitstring = "".join(
                     candidates[rng.choice(range(len(candidates)),
                                           p=probs / sum(probs))]
