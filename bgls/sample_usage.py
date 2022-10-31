@@ -12,7 +12,7 @@ circuit = cirq.Circuit(
     cirq.CNOT(q1, q2),
     # works equally well since all we need is a single measurement of all
     # qubits:
-    cirq.measure([q0, q1, q2], key='result')
+    cirq.measure([q0, q1, q2], key="result"),
 )
 
 # how to sample measurements with cirq  default:

@@ -13,18 +13,18 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
     Details here.
     """
 
-    def __init__(self, seed: 'cirq.RANDOM_STATE_OR_SEED_LIKE' = None):
+    def __init__(self, seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None):
         self._seed = seed
 
     def _run(
             self,
-            circuit: 'cirq.AbstractCircuit',
-            param_resolver: 'cirq.ParamResolver',
+            circuit: "cirq.AbstractCircuit",
+            param_resolver: "cirq.ParamResolver",
             repetitions: int,
     ) -> Dict[str, np.ndarray]:
         """See definition in `cirq.SimulatesSamples`."""
-        param_resolver = param_resolver or cirq.ParamResolver(
-            {})  # in case empty
+        # second option in case empty:
+        param_resolver = param_resolver or cirq.ParamResolver({})
         resolved_circuit = cirq.resolve_parameters(circuit, param_resolver)
         cirq.sim.simulator.check_all_resolved(resolved_circuit)
 
@@ -37,15 +37,15 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             qubits: FrozenSet[cirq.Qid],
     ) -> np.ndarray:
         unitary = cirq.unitary(
-            cirq.Moment(operation,
-                        [cirq.I.on(q) for q in qubits - set(operation.qubits)])
+            cirq.Moment(
+                operation,
+                [cirq.I.on(q) for q in qubits - set(operation.qubits)]
+            )
         )
         return unitary @ state
 
     def _ryan_sample_final_results(
-            self,
-            resolved_circuit: cirq.AbstractCircuit,
-            repetitions: int
+            self, resolved_circuit: cirq.AbstractCircuit, repetitions: int
     ) -> Dict[str, np.ndarray]:
         rng = np.random.RandomState(self._seed)
         records: Dict[str, np.ndarray] = {}
@@ -75,13 +75,18 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
 
                 # Determine the candidate bitstrings to sample.
                 op_support = {qubit_index[q] for q in op.qubits}
-                candidates = list(itertools.product(
-                    *[["0",
-                       "1"] if i in op_support  # Update bits on operation
-                      # support.
-                      else [b]  # Fix bits not on operation support.
-                      for i, b in enumerate(bitstring)]
-                ))
+                candidates = list(
+                    itertools.product(
+                        *[
+                            ["0",
+                             "1"] if i in op_support  # Update bits on
+                            # operation
+                            # support.
+                            else [b]  # Fix bits not on operation support.
+                            for i, b in enumerate(bitstring)
+                        ]
+                    )
+                )
 
                 # Compute probability of each candidate bitstring.
                 state = self._ryan_apply(op, state,
