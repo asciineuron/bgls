@@ -1,10 +1,11 @@
+from _typeshed import SupportsLessThan
 from builtins import set
 
 import cirq
 import numpy as np
 import functools
 import itertools
-from typing import Dict, Sequence, Set, List
+from typing import Dict, Sequence, Set, List, Any, Tuple
 
 
 class BglsSimulator(cirq.sim.SimulatesSamples):
@@ -33,7 +34,7 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             self,
             operation: cirq.Operation,
             state: np.ndarray,
-            qubits: Set[cirq.Qid],
+            qubits: frozenset[cirq.Qid],
     ) -> np.ndarray:
         unitary = cirq.unitary(
             cirq.Moment(operation, [cirq.I.on(q) for q in qubits - set(operation.qubits)])
@@ -60,7 +61,7 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             repetitions: int
     ) -> Dict[str, np.ndarray]:
         rng = np.random.RandomState(self._seed)
-        records: Dict[str, np.ndarray] = {} #Dict[str, List] = {}
+        records: Dict[str, np.ndarray[int]] = {} #Dict[str, List] = {}
         results: Dict[str, np.ndarray] = {}
 
         qubits = resolved_circuit.all_qubits()
@@ -112,7 +113,7 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
         # is solution-specific code.
         # let's try the most naive approach first and work up to more efficient/complex solutions
         qubits = tuple(sorted(resolved_circuit.all_qubits()))
-        measurements = {}
+        measurements: dict[Any, Any] = {}
         for repetition in range(repetitions):
             # from Ryan's colab, set initial state:
             state = functools.reduce(
@@ -120,8 +121,8 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             ).state_vector()
             for op in resolved_circuit.all_operations():
                 support = op.qubits # set of qubits acted on (Ryan instead had the positional numbers?)
-                A = tuple(sorted(
-                    set(range(1, len(qubits))) - set(op.qubits))) # make sure 1 based index is ok
-                S = set()
+                A: tuple[SupportsLessThan | Any, ...] = tuple(sorted(
+                    set(range(1, len(qubits))) - set(range(op.qubits)))) # make sure 1 based index is ok
+                S: set[Any] = set()
 
         return measurements
