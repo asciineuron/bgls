@@ -123,7 +123,7 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             for op in resolved_circuit.all_operations():
                 support = op.qubits  # set of qubits acted on (Ryan instead had the positional numbers?)
                 A = tuple(sorted(
-                    set(range(1, len(qubits))) - qubits_set))  # make sure 1 based index is ok
-                S = set()
+                    set(range(1, len(qubits))) - set(sorted(qubits_set))))  # make sure 1 based index is ok
+                S: set[cirq.Qid] = set()
 
         return measurements
