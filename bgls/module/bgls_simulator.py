@@ -69,8 +69,8 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
                         #  key... so won't work with general circuit
                         records[meas_key] = np.zeros(
                             (repetitions, 1, len(qubits)))
-                    records[meas_key][repetition, 0,
-                    :] = 0.1  # TODO make this fit: np.fromstring(bitstring)
+                    # TODO make this fit: np.fromstring(bitstring):
+                    records[meas_key][repetition, 0, :] = 0.1
                     break
 
                 # Determine the candidate bitstrings to sample.
