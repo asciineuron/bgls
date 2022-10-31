@@ -23,7 +23,8 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             repetitions: int,
     ) -> Dict[str, np.ndarray]:
         """See definition in `cirq.SimulatesSamples`."""
-        param_resolver = param_resolver or cirq.ParamResolver({})  # in case empty
+        param_resolver = param_resolver or cirq.ParamResolver(
+            {})  # in case empty
         resolved_circuit = cirq.resolve_parameters(circuit, param_resolver)
         cirq.sim.simulator.check_all_resolved(resolved_circuit)
 
@@ -36,7 +37,8 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             qubits: FrozenSet[cirq.Qid],
     ) -> np.ndarray:
         unitary = cirq.unitary(
-            cirq.Moment(operation, [cirq.I.on(q) for q in qubits - set(operation.qubits)])
+            cirq.Moment(operation,
+                        [cirq.I.on(q) for q in qubits - set(operation.qubits)])
         )
         return unitary @ state
 
@@ -63,26 +65,34 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
                     print(op)
                     meas_key = op.gate.key
                     if meas_key not in records:
-                        # TODO assume here we only have 1 appearance of key... so won't work with general circuit
-                        records[meas_key] = np.zeros((repetitions, 1, len(qubits)))
-                    records[meas_key][repetition, 0, :] = 0.1  # TODO make this fit: np.fromstring(bitstring)
+                        # TODO assume here we only have 1 appearance of
+                        #  key... so won't work with general circuit
+                        records[meas_key] = np.zeros(
+                            (repetitions, 1, len(qubits)))
+                    records[meas_key][repetition, 0,
+                    :] = 0.1  # TODO make this fit: np.fromstring(bitstring)
                     break
 
                 # Determine the candidate bitstrings to sample.
                 op_support = {qubit_index[q] for q in op.qubits}
                 candidates = list(itertools.product(
-                    *[["0", "1"] if i in op_support  # Update bits on operation support.
+                    *[["0",
+                       "1"] if i in op_support  # Update bits on operation
+                      # support.
                       else [b]  # Fix bits not on operation support.
                       for i, b in enumerate(bitstring)]
                 ))
 
                 # Compute probability of each candidate bitstring.
-                state = self._ryan_apply(op, state, qubits)  # TODO: Make this an input.
-                probs = [abs(state[int("".join(bits), 2)]) ** 2 for bits in candidates]
+                state = self._ryan_apply(op, state,
+                                         qubits)  # TODO: Make this an input.
+                probs = [abs(state[int("".join(bits), 2)]) ** 2 for bits in
+                         candidates]
 
                 # Sample from the candidate bitstrings and update the bitstring.
                 bitstring = "".join(
-                    candidates[rng.choice(range(len(candidates)), p=probs / sum(probs))]
+                    candidates[rng.choice(range(len(candidates)),
+                                          p=probs / sum(probs))]
                 )
 
         return records
