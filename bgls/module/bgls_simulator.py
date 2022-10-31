@@ -1,11 +1,10 @@
-from _typeshed import SupportsLessThan
 from builtins import set
 
 import cirq
 import numpy as np
 import functools
 import itertools
-from typing import Dict, Sequence, Set, List, Any, Tuple
+from typing import Dict, Sequence, Set, List, Any, Tuple, FrozenSet
 
 
 class BglsSimulator(cirq.sim.SimulatesSamples):
@@ -18,10 +17,10 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
         self._seed = seed
 
     def _run(
-        self,
-        circuit: 'cirq.AbstractCircuit',
-        param_resolver: 'cirq.ParamResolver',
-        repetitions: int,
+            self,
+            circuit: 'cirq.AbstractCircuit',
+            param_resolver: 'cirq.ParamResolver',
+            repetitions: int,
     ) -> Dict[str, np.ndarray]:
         """See definition in `cirq.SimulatesSamples`."""
         param_resolver = param_resolver or cirq.ParamResolver({})  # in case empty
@@ -34,7 +33,7 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             self,
             operation: cirq.Operation,
             state: np.ndarray,
-            qubits: frozenset[cirq.Qid],
+            qubits: FrozenSet[cirq.Qid],
     ) -> np.ndarray:
         unitary = cirq.unitary(
             cirq.Moment(operation, [cirq.I.on(q) for q in qubits - set(operation.qubits)])
@@ -61,7 +60,7 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
             repetitions: int
     ) -> Dict[str, np.ndarray]:
         rng = np.random.RandomState(self._seed)
-        records: Dict[str, np.ndarray[int]] = {} #Dict[str, List] = {}
+        records: Dict[str, np.ndarray] = {}  # Dict[str, List] = {}
         results: Dict[str, np.ndarray] = {}
 
         qubits = resolved_circuit.all_qubits()
@@ -82,9 +81,9 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
                     if meas_key not in records:
                         # TODO assume here we only have 1 appearance of key... so won't work with general circuit
                         records[meas_key] = np.zeros((repetitions, 1, len(qubits)))
-                        #records[meas_key] = []
-                    #records[meas_key].append([repetition, int(bitstring)])  # how to count # times key seen?
-                    records[meas_key][repetition, 0, :] = 0.1 # TODO make this fit: np.fromstring(bitstring)
+                        # records[meas_key] = []
+                    # records[meas_key].append([repetition, int(bitstring)])  # how to count # times key seen?
+                    records[meas_key][repetition, 0, :] = 0.1  # TODO make this fit: np.fromstring(bitstring)
                     # need to break because can't use ryan's apply with measurement gates
                     break
 
@@ -104,7 +103,8 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
                 bitstring = "".join(
                     candidates[rng.choice(range(len(candidates)), p=probs / sum(probs))]
                 )
-                # now just to convert bitstring into proper output format, and then wrap in a repetitions loop and return
+                # now just to convert bitstring into proper output format,
+                # and then wrap in a repetitions loop and return
 
         return records
 
@@ -113,16 +113,17 @@ class BglsSimulator(cirq.sim.SimulatesSamples):
         # is solution-specific code.
         # let's try the most naive approach first and work up to more efficient/complex solutions
         qubits = tuple(sorted(resolved_circuit.all_qubits()))
-        measurements: dict[Any, Any] = {}
+        qubits_set = resolved_circuit.all_qubits()
+        measurements: Dict[Any, Any] = {}
         for repetition in range(repetitions):
             # from Ryan's colab, set initial state:
             state = functools.reduce(
                 lambda a, b: a * b, [cirq.KET_ZERO(q) for q in qubits]
             ).state_vector()
             for op in resolved_circuit.all_operations():
-                support = op.qubits # set of qubits acted on (Ryan instead had the positional numbers?)
-                A: tuple[SupportsLessThan | Any, ...] = tuple(sorted(
-                    set(range(1, len(qubits))) - set(range(op.qubits)))) # make sure 1 based index is ok
-                S: set[Any] = set()
+                support = op.qubits  # set of qubits acted on (Ryan instead had the positional numbers?)
+                A = tuple(sorted(
+                    set(range(1, len(qubits))) - qubits_set))  # make sure 1 based index is ok
+                S = set()
 
         return measurements
