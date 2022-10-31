@@ -2,20 +2,24 @@
 # as well as providing clear development targets to satisfy
 
 import cirq
-from bgls.module import bgls_simulator
+from module import bgls_simulator
 
 # create GHZ circuit
 q0, q1, q2 = cirq.LineQubit.range(3)
 circuit = cirq.Circuit(
     cirq.H(q0),
     cirq.CNOT(q0,q1),
-    cirq.CNOT(q1,q2)
+    cirq.CNOT(q1,q2),
+    # works equally well since all we need is a single measurement of all qubits:
+    cirq.measure([q0, q1, q2], key='result')
 )
 
-# how to sample measurements with cirq's default:
+# how to sample measurements with cirq  default:
 cirq_simulator = cirq.Simulator()
-cirq_results = cirq_simulator.run(circuit, repetitions=2)
+cirq_results = cirq_simulator.run(circuit, repetitions=3)
+print(cirq_results)
 
 # how to sample with our sampler:
-gate_simulator = bgls_simulator.GateSamplerSimulator()
-gate_results = bgls_simulator.run(circuit, repetitions=2)
+bgls_simulator = bgls_simulator.BglsSimulator()
+bgls_results = bgls_simulator.run(circuit, repetitions=2)
+print(bgls_results)
