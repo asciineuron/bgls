@@ -12,4 +12,4 @@
 
 """Whatever this package is for."""
 
-from bgls.module import Object
+from bgls.module import bgls_sampler

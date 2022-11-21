@@ -4,9 +4,9 @@ import numpy as np
 
 
 def bgls_sample(
-        simulator: cirq.SimulatesAmplitudes,
-        circuit: "cirq.AbstractCircuit",
-        seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
+    simulator: cirq.SimulatesAmplitudes,
+    circuit: "cirq.AbstractCircuit",
+    seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
 ) -> str:
     """
     Takes any simulator capable of computing bitstring amplitudes over a
