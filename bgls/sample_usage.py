@@ -31,6 +31,6 @@ bitstring = bgls_sampler.bgls_sample(
     circuit_sans_measure,
     init_state,
     bgls_utils.state_vector_bitstring_amplitude,
-    cirq.protocols.act_on
+    cirq.protocols.act_on,
 )
 print(bitstring)

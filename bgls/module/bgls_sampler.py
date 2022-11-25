@@ -8,12 +8,12 @@ Bitstring = TypeVar("Bitstring")
 
 
 def bgls_sample(
-        circuit: cirq.Circuit,
-        initial_state: State,
-        compute_amplitude: Callable[
-            [State, Bitstring], complex],
-        apply_gate: Callable[
-            [cirq.Operation, State], None] = cirq.protocols.act_on
+    circuit: cirq.Circuit,
+    initial_state: State,
+    compute_amplitude: Callable[[State, Bitstring], complex],
+    apply_gate: Callable[
+        [cirq.Operation, State], None
+    ] = cirq.protocols.act_on,
 ) -> Bitstring:
     rng = np.random.RandomState()
 
@@ -41,8 +41,10 @@ def bgls_sample(
         )
 
         # Compute probability of each candidate bitstring:
-        candidate_amplitudes = [compute_amplitude(state, "".join(candidate))
-                                for candidate in candidates]
+        candidate_amplitudes = [
+            compute_amplitude(state, "".join(candidate))
+            for candidate in candidates
+        ]
         candidate_probs = np.abs(np.asarray(candidate_amplitudes)) ** 2
 
         # sample to get bitstring
