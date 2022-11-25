@@ -1,20 +1,17 @@
 import itertools
 import cirq
 import numpy as np
-from typing import TypeVar, Callable
+from typing import TypeVar, Callable, Any
 
 State = TypeVar("State")
-Bitstring = TypeVar("Bitstring")
 
 
 def bgls_sample(
     circuit: cirq.Circuit,
     initial_state: State,
-    compute_amplitude: Callable[[State, Bitstring], complex],
-    apply_gate: Callable[
-        [cirq.Operation, State], None
-    ] = cirq.protocols.act_on,
-) -> Bitstring:
+    compute_amplitude: Callable[[State, str], complex],
+    apply_gate: Callable[[cirq.Operation, State], Any] = cirq.protocols.act_on,
+) -> str:
     rng = np.random.RandomState()
 
     resolved_circuit = cirq.resolve_parameters(circuit, cirq.ParamResolver({}))
