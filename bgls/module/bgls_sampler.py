@@ -1,18 +1,22 @@
 import itertools
 import cirq
 import numpy as np
+from typing import TypeVar, Callable
+
+State = TypeVar("State")
+Bitstring = TypeVar("Bitstring")
 
 
 def bgls_sample(
-        simulator: cirq.SimulatesAmplitudes,
-        circuit: "cirq.AbstractCircuit",
-        seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
-) -> str:
-    """
-    Takes any simulator capable of computing bitstring amplitudes over a
-    circuit, returns a sampled bitstring.
-    """
-    rng = np.random.RandomState(seed)
+        circuit: cirq.Circuit,
+        initial_state: State,
+        compute_amplitude: Callable[
+            [State, Bitstring], complex],
+        apply_gate: Callable[
+            [cirq.Operation, State], None] = cirq.protocols.act_on
+) -> Bitstring:
+    rng = np.random.RandomState()
+
     resolved_circuit = cirq.resolve_parameters(circuit, cirq.ParamResolver({}))
     cirq.sim.simulator.check_all_resolved(resolved_circuit)
 
@@ -20,13 +24,12 @@ def bgls_sample(
     qubit_index = {q: i for i, q in enumerate(sorted(qubits))}
     bitstring = "0" * len(qubits)
 
-    subcircuit = cirq.Circuit()
+    state = initial_state
     for op in resolved_circuit.all_operations():
-        # compute_amplitudes() works on entire circuit, so must iteratively
-        # build up subcircuit to run on
-        subcircuit.append(op)
+        # apply gate to system:
+        apply_gate(op, state)
 
-        # Determine the candidate bitstrings to sample.
+        # Determine the candidate bitstrings to sample:
         op_support = {qubit_index[q] for q in op.qubits}
         candidates = list(
             itertools.product(
@@ -36,24 +39,13 @@ def bgls_sample(
                 ]
             )
         )
-        # need to convert candidates to sequence of ints (ie turn our
-        # bitstrings into their base10 int representations)
-        candidates_as_int_list = []
-        for candidate in candidates:
-            int_rep = int("".join(candidate), 2)
-            candidates_as_int_list.append(int_rep)
 
-        # Compute probability of each candidate bitstring.
-        # have to make sure all qubits are recognized even if not operating on
-        # yet, so pass qubit order of entire (not sub-) circuit
-        candidate_amplitudes = simulator.compute_amplitudes(
-            subcircuit,
-            candidates_as_int_list,
-            qubit_order=resolved_circuit.all_qubits(),
-        )
-        # this is a list of complex coefficients, probs are these squared
+        # Compute probability of each candidate bitstring:
+        candidate_amplitudes = [compute_amplitude(state, "".join(candidate))
+                                for candidate in candidates]
         candidate_probs = np.abs(np.asarray(candidate_amplitudes)) ** 2
 
+        # sample to get bitstring
         bitstring = "".join(
             candidates[
                 rng.choice(
