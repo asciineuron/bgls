@@ -12,4 +12,4 @@
 
 """Whatever this module is for."""
 
-from bgls.module.file import Object
+import bgls.module.bgls_sampler
