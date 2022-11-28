@@ -98,11 +98,11 @@ def bgls_sample(
             )
         )
         joined_cands = ["".join(cand) for cand in candidates]
-        rev_cands = [cand[::-1] for cand in joined_cands]
+        # rev_cands = [cand[::-1] for cand in joined_cands]
 
         # Compute probability of each candidate bitstring:
         candidate_amplitudes = [
-            compute_amplitude(state, candidate) for candidate in rev_cands
+            compute_amplitude(state, candidate) for candidate in joined_cands
         ]
         candidate_probs = np.abs(np.asarray(candidate_amplitudes)) ** 2
 
