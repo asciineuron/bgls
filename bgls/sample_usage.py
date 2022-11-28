@@ -9,28 +9,33 @@ q0, q1, q2 = cirq.LineQubit.range(3)
 circuit = cirq.Circuit(
     cirq.H(q0),
     cirq.CNOT(q0, q1),
-    cirq.CNOT(q1, q2),
-    # works equally well since all we need is a single measurement of all
-    # qubits:
+    cirq.CNOT(q0, q2),
     cirq.measure([q0, q1, q2], key="result"),
 )
 
 # how to sample measurements with cirq default:
 cirq_simulator = cirq.Simulator()
-cirq_results = cirq_simulator.run(circuit, repetitions=3)
+cirq_results = cirq_simulator.run(circuit, repetitions=2)
 print(cirq_results)
 
-# for now, we are not dealing with measurement gates in the circuit
-q0, q1, q2 = cirq.LineQubit.range(3)
-circuit_sans_measure = cirq.Circuit(
-    cirq.H(q0), cirq.CNOT(q0, q1), cirq.CNOT(q1, q2)
-)
-init_state = cirq.StateVectorSimulationState(qubits=(q0, q1, q2))
+# need inverted qubit ordering to handle state vector properly
+init_state = cirq.StateVectorSimulationState(qubits=(q2, q1, q0))
 
+# for a single sampling:
 bitstring = bgls_sampler.bgls_sample(
-    circuit_sans_measure,
+    circuit,
     init_state,
     bgls_utils.state_vector_bitstring_amplitude,
     cirq.protocols.act_on,
 )
 print(bitstring)
+
+# wrapping sampling in a cirq.Result across repetitions:
+bgls_result = bgls_sampler.bgls_results_wrapper(
+    circuit,
+    init_state,
+    bgls_utils.state_vector_bitstring_amplitude,
+    cirq.protocols.act_on,
+    repetitions=10,
+)
+print(bgls_result)

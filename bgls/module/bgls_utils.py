@@ -5,13 +5,11 @@ import numpy as np
 from typing import TypeVar
 
 State = TypeVar("State")
-Bitstring = TypeVar("Bitstring")
 
 
 def state_vector_bitstring_amplitude(
-        state_vector: cirq.sim.state_vector_simulation_state
-        .StateVectorSimulationState,
-        bitstring: Bitstring,
+    state_vector: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
+    bitstring: str,
 ) -> complex:
     """
     For a cirq StateVectorSimulationState,
@@ -24,7 +22,7 @@ def state_vector_bitstring_amplitude(
 
 
 def density_matrix_bitstring_probability(
-        state: cirq.sim.DensityMatrixSimulationState, bitstring: Bitstring
+    state: cirq.sim.DensityMatrixSimulationState, bitstring: str
 ) -> float:
     index = int(bitstring, 2)
     density_matrix = cirq.to_valid_density_matrix(state.target_tensor)
