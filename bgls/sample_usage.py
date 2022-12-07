@@ -1,11 +1,8 @@
-# this will give demonstrations on how our sampler is to be used
-# as well as providing clear development targets to satisfy
-
 import cirq
 from module import bgls_sampler, bgls_utils
 import matplotlib.pyplot as plt
 
-# create GHZ circuit
+# create GHZ circuit with measurement
 q0, q1, q2 = cirq.LineQubit.range(3)
 circuit = cirq.Circuit(
     cirq.H(q0),
@@ -18,24 +15,26 @@ circuit = cirq.Circuit(
 cirq_simulator = cirq.Simulator()
 cirq_results = cirq_simulator.run(circuit, repetitions=100)
 print(cirq_results)
+_ = cirq.plot_state_histogram(cirq_results, plt.subplot())
+plt.show()
 
-# need inverted qubit ordering to handle state vector properly
+# initialize state for bgls:
 init_state = cirq.StateVectorSimulationState(
     qubits=(q0, q1, q2), initial_state=0
-)  #
-# cirq.StateVectorSimulationState(qubits=(q2, q1, q0))
+)
 
-# for a single sampling:
-bitstring = bgls_sampler.bgls_sample(
+# for a single sampling, can get raw bitstring:
+bitstring = bgls_sampler.sample_core(
     circuit,
     init_state.copy(),
     bgls_utils.state_vector_bitstring_amplitude,
     cirq.protocols.act_on,
+    return_as_bitstring=True,
 )
 print(bitstring)
 
-# wrapping sampling in a cirq.Result across repetitions:
-bgls_result = bgls_sampler.bgls_results_wrapper(
+# sampling measurements with bgls, identical to run() output cirq.Result
+bgls_result = bgls_sampler.sample(
     circuit,
     init_state,
     bgls_utils.state_vector_bitstring_amplitude,
