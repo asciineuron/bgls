@@ -7,7 +7,7 @@ from typing import TypeVar
 State = TypeVar("State")
 
 
-def state_vector_bitstring_amplitude(
+def compute_state_vector_amplitude(
     state_vector: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
     bitstring: str,
 ) -> complex:
@@ -17,7 +17,7 @@ def state_vector_bitstring_amplitude(
     """
     index = int(bitstring, 2)
     vector = cirq.to_valid_state_vector(state_vector.target_tensor)
-    amplitude = np.abs(vector[index])
+    amplitude = vector[index]
     return amplitude
 
 

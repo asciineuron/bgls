@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Bgls sampler."""
+"""The Bgls sampler is a Cirq-based implementation of Bravyi, Gosset, and Liu's
+algorithm for simulating quantum measurement without computing marginals."""
 
 from bgls.module import bgls_sampler

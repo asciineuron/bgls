@@ -1,8 +1,7 @@
 import itertools
 import cirq
 import numpy as np
-from typing import TypeVar, Callable, Any, Dict, Sequence
-from operator import itemgetter
+from typing import TypeVar, Callable, Any, Dict, Sequence, List
 
 State = TypeVar("State")
 
@@ -17,6 +16,8 @@ def sample(
     repetitions: int = 1,
     seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
 ) -> cirq.Result:
+    rng = cirq.value.parse_random_state(seed)
+
     resolved_circuit = cirq.resolve_parameters(
         circuit, cirq.ParamResolver({})
     )
@@ -28,19 +29,21 @@ def sample(
     records: Dict[str, np.ndarray] = {}
 
     for rep in range(repetitions):
-        record = sample_core(
+        keys_to_bitstrs = sample_core(
             resolved_circuit,
             initial_state,
             compute_amplitude,
             apply_gate,
-            seed,
+            rng=rng,
         )
-        for meas_key in record:
+        for meas_key in keys_to_bitstrs:
             if rep == 0 and meas_key not in records:
                 records[meas_key] = np.zeros(
-                    (repetitions, 1, np.size(record[meas_key], 1))
+                    (repetitions, 1, len(keys_to_bitstrs[meas_key][-1]))
                 )
-            records[meas_key][rep, 0, :] = record[meas_key][0, :]
+            records[meas_key][rep, 0, :] = [
+                int(bit) for bit in keys_to_bitstrs[meas_key][-1]
+            ]
 
     result = cirq.study.ResultDict(records=records)
     return result
@@ -53,13 +56,11 @@ def sample_core(
     apply_gate: Callable[
         [cirq.Operation, State], Any
     ] = cirq.protocols.act_on,
-    seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
-    return_as_bitstring: bool = False,
+    rng: np.random.RandomState = None,
     return_history: bool = False,
-):
-    # TODO how to combine return_history with returning records?
-    rng = cirq.value.parse_random_state(seed)
-    records: Dict[str, np.ndarray] = {}
+) -> Dict[str, List[str]]:
+    keys_to_indices: Dict[str, List[int]] = {}
+    keys_to_bitstrings: Dict[str, List[str]] = {}
 
     qubits = circuit.all_qubits()
     qubit_index = {q: i for i, q in enumerate(sorted(qubits))}
@@ -72,15 +73,9 @@ def sample_core(
             # check if terminal:
             if circuit.next_moment_operating_on(op.qubits, i + 1) is None:
                 meas_key = op.gate.key
-                if meas_key not in records:
-                    # might have bug if multiple measurements with same
-                    # key but different qubits
-                    records[meas_key] = np.zeros((1, len(op.qubits)))
-                    # convert measured subset of bitstring to binary int rep:
+                if meas_key not in keys_to_indices:
                     meas_indices = [qubit_index[q] for q in op.qubits]
-                    records[meas_key][0, :] = np.fromstring(
-                        "".join(itemgetter(*(meas_indices))(bitstring)), "u1"
-                    ) - ord("0")
+                    keys_to_indices[meas_key] = meas_indices
             continue
 
         apply_gate(op, state)
@@ -114,13 +109,29 @@ def sample_core(
         )
         bitstrings.append(bitstring)
 
-    if return_as_bitstring:
-        if return_history:
-            return bitstring, bitstrings
+    # return dict of list of bitstrings measured per gate
+    # (optionally over time)
+    for meas in keys_to_indices:
+        if not return_history:
+            keys_to_bitstrings[meas] = [
+                "".join(
+                    [
+                        bit
+                        for i, bit in enumerate(bitstring)
+                        if i in keys_to_indices[meas]
+                    ]
+                )
+            ]
         else:
-            return bitstring
-    else:
-        if return_history:
-            return records, bitstrings
-        else:
-            return records
+            keys_to_bitstrings[meas] = [
+                "".join(
+                    [
+                        bit
+                        for i, bit in enumerate(bitstr)
+                        if i in keys_to_indices[meas]
+                    ]
+                )
+                for bitstr in bitstrings
+            ]
+
+    return keys_to_bitstrings

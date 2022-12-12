@@ -27,9 +27,9 @@ init_state = cirq.StateVectorSimulationState(
 bitstring = bgls_sampler.sample_core(
     circuit,
     init_state.copy(),
-    bgls_utils.state_vector_bitstring_amplitude,
+    bgls_utils.compute_state_vector_amplitude,
     cirq.protocols.act_on,
-    return_as_bitstring=True,
+    rng=cirq.value.parse_random_state(None),
 )
 print(bitstring)
 
@@ -37,7 +37,7 @@ print(bitstring)
 bgls_result = bgls_sampler.sample(
     circuit,
     init_state,
-    bgls_utils.state_vector_bitstring_amplitude,
+    bgls_utils.compute_state_vector_amplitude,
     cirq.protocols.act_on,
     repetitions=100,
 )

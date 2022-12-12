@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Bgls sampler."""
+"""Functions and classes pertaining to core sampling algorithm
+implementation."""
 
 import bgls.module.bgls_sampler
