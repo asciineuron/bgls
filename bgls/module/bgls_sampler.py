@@ -7,14 +7,14 @@ State = TypeVar("State")
 
 
 def sample(
-    circuit: cirq.Circuit,
-    initial_state: State,
-    compute_amplitude: Callable[[State, str], complex],
-    apply_gate: Callable[
-        [cirq.Operation, State], Any
-    ] = cirq.protocols.act_on,
-    repetitions: int = 1,
-    seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
+        circuit: cirq.Circuit,
+        initial_state: State,
+        compute_amplitude: Callable[[State, str], complex],
+        apply_gate: Callable[
+            [cirq.Operation, State], Any
+        ] = cirq.protocols.act_on,
+        repetitions: int = 1,
+        seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
 ) -> cirq.Result:
     rng = cirq.value.parse_random_state(seed)
 
@@ -50,14 +50,14 @@ def sample(
 
 
 def sample_core(
-    circuit: cirq.Circuit,
-    initial_state: State,
-    compute_amplitude: Callable[[State, str], complex],
-    apply_gate: Callable[
-        [cirq.Operation, State], Any
-    ] = cirq.protocols.act_on,
-    rng: np.random.RandomState = None,
-    return_history: bool = False,
+        circuit: cirq.Circuit,
+        initial_state: State,
+        compute_amplitude: Callable[[State, str], complex],
+        apply_gate: Callable[
+            [cirq.Operation, State], Any
+        ] = cirq.protocols.act_on,
+        rng: np.random.RandomState = cirq.value.parse_random_state(None),
+        return_history: bool = False,
 ) -> Dict[str, List[str]]:
     keys_to_indices: Dict[str, List[int]] = {}
     keys_to_bitstrings: Dict[str, List[str]] = {}
