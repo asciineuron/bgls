@@ -1,5 +1,5 @@
 import cirq
-from module import bgls_sampler, bgls_utils
+import bgls_sampler, bgls_utils
 import matplotlib.pyplot as plt
 
 # create GHZ circuit with measurement
