@@ -13,4 +13,8 @@
 """The Bgls sampler is a Cirq-based implementation of Bravyi, Gosset, and Liu's
 algorithm for simulating quantum measurement without computing marginals."""
 
-from bgls.module import bgls_sampler
+from .bgls_sampler import Simulator
+from .bgls_utils import *
+
+__version__ = "0.1.0dev"
+__author__ = "Alex Shapiro"
