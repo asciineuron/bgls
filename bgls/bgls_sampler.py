@@ -8,29 +8,27 @@ class Simulator:
     State = TypeVar("State")
 
     def __init__(
-            self,
-            initial_state: State,
-            compute_probability: Callable[[State, str], float],
-            apply_gate: Callable[
-                [cirq.Operation, State], Any
-            ] = cirq.protocols.act_on,  # type: ignore[assignment]
+        self,
+        initial_state: State,
+        compute_probability: Callable[[State, str], float],
+        apply_gate: Callable[
+            [cirq.Operation, State], Any
+        ] = cirq.protocols.act_on,  # type: ignore[assignment]
     ):
         self.initial_state = initial_state
         self.compute_probability = compute_probability
         self.apply_gate = apply_gate
 
     def sample(
-            self,
-            circuit: cirq.Circuit,
-            param_resolver: 'cirq.ParamResolverOrSimilarType' = None,
-            repetitions: int = 1,
-            seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
+        self,
+        circuit: cirq.Circuit,
+        param_resolver: "cirq.ParamResolverOrSimilarType" = None,
+        repetitions: int = 1,
+        seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
     ) -> cirq.Result:
         rng = cirq.value.parse_random_state(seed)
 
-        resolved_circuit = cirq.resolve_parameters(
-            circuit, param_resolver
-        )
+        resolved_circuit = cirq.resolve_parameters(circuit, param_resolver)
         cirq.sim.simulator.check_all_resolved(resolved_circuit)
 
         if not circuit.are_any_measurements_terminal():
@@ -57,10 +55,10 @@ class Simulator:
         return cirq.study.ResultDict(records=records)
 
     def sample_core(
-            self,
-            circuit: cirq.Circuit,
-            rng: np.random.RandomState = cirq.value.parse_random_state(None),
-            return_history: bool = False,
+        self,
+        circuit: cirq.Circuit,
+        rng: np.random.RandomState = cirq.value.parse_random_state(None),
+        return_history: bool = False,
     ) -> Dict[str, List[str]]:
         keys_to_indices: Dict[str, List[int]] = {}
         keys_to_bitstrings: Dict[str, List[str]] = {}
