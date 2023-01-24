@@ -16,3 +16,4 @@ coverage.xml
 jupyter_execute/
 testenv/
 venv/
+.mypy_cache

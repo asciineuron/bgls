@@ -8,22 +8,22 @@ class Simulator:
     State = TypeVar("State")
 
     def __init__(
-        self,
-        initial_state: State,
-        compute_probability: Callable[[State, str], float],
-        apply_gate: Callable[
-            [cirq.Operation, State], Any
-        ] = cirq.protocols.act_on,
+            self,
+            initial_state: State,
+            compute_probability: Callable[[State, str], float],
+            apply_gate: Callable[
+                [cirq.Operation, State], Any
+            ] = cirq.protocols.act_on,  # type: ignore[assignment]
     ):
         self.initial_state = initial_state
         self.compute_probability = compute_probability
         self.apply_gate = apply_gate
 
     def sample(
-        self,
-        circuit: cirq.Circuit,
-        repetitions: int = 1,
-        seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
+            self,
+            circuit: cirq.Circuit,
+            repetitions: int = 1,
+            seed: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
     ) -> cirq.Result:
         rng = cirq.value.parse_random_state(seed)
 
@@ -56,10 +56,10 @@ class Simulator:
         return cirq.study.ResultDict(records=records)
 
     def sample_core(
-        self,
-        circuit: cirq.Circuit,
-        rng: np.random.RandomState = cirq.value.parse_random_state(None),
-        return_history: bool = False,
+            self,
+            circuit: cirq.Circuit,
+            rng: np.random.RandomState = cirq.value.parse_random_state(None),
+            return_history: bool = False,
     ) -> Dict[str, List[str]]:
         keys_to_indices: Dict[str, List[int]] = {}
         keys_to_bitstrings: Dict[str, List[str]] = {}
@@ -74,7 +74,7 @@ class Simulator:
             if cirq.protocols.is_measurement(op):
                 # check if terminal:
                 if circuit.next_moment_operating_on(op.qubits, i + 1) is None:
-                    meas_key = op.gate.key
+                    meas_key = cirq.protocols.measurement_key_name(op.gate)
                     if meas_key not in keys_to_indices:
                         meas_indices = [qubit_index[q] for q in op.qubits]
                         keys_to_indices[meas_key] = meas_indices
@@ -95,10 +95,10 @@ class Simulator:
             joined_cands = ["".join(cand) for cand in candidates]
 
             # Compute probability of each candidate bitstring:
-            candidate_probs = [
+            candidate_probs = np.asarray([
                 self.compute_probability(state, candidate)
                 for candidate in joined_cands
-            ]
+            ])
 
             # sample to get bitstring
             bitstring = "".join(

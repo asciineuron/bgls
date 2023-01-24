@@ -19,16 +19,17 @@ _ = cirq.plot_state_histogram(cirq_results, plt.subplot())
 plt.show()
 
 # initialize state for bgls:
-init_state = cirq.DensityMatrixSimulationState(
+init_state = cirq.StateVectorSimulationState(
     qubits=(q0, q1, q2), initial_state=0
 )
 
 # how to sample measurements with bgls
 bgls_simulator = bgls_sampler.Simulator(
     init_state,
-    bgls_utils.density_matrix_bitstring_probability,
+    bgls_utils.state_vector_bitstring_probability,
     cirq.protocols.act_on,
 )
+
 bgls_results = bgls_simulator.sample(circuit, repetitions=100)
 print(bgls_results)
 _ = cirq.plot_state_histogram(bgls_results, plt.subplot())

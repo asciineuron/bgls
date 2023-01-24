@@ -1,9 +1,7 @@
 import pytest
 import numpy as np
 import cirq
-import matplotlib.pyplot as plt
-from bgls.module import bgls_sampler
-from bgls.module import bgls_utils
+import bgls
 
 """
 Test suite for proper behavior with seeds, measurements, and state types.
@@ -24,9 +22,9 @@ def test_seed_continuity():
         qubits=(q0, q1, q2), initial_state=0
     )
 
-    bgls_simulator = bgls_sampler.Simulator(
+    bgls_simulator = bgls.Simulator(
         init_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     bgls_result_1 = bgls_simulator.sample(
@@ -62,9 +60,9 @@ def test_intermediate_measurements():
     init_state = cirq.StateVectorSimulationState(
         qubits=(q0, q1, q2), initial_state=0
     )
-    bgls_simulator = bgls_sampler.Simulator(
+    bgls_simulator = bgls.Simulator(
         init_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     bgls_result = bgls_simulator.sample(ghz, repetitions=100, seed=1)
@@ -94,9 +92,9 @@ def test_multiple_measurements():
     init_state = cirq.StateVectorSimulationState(
         qubits=(q0, q1, q2), initial_state=0
     )
-    bgls_simulator = bgls_sampler.Simulator(
+    bgls_simulator = bgls.Simulator(
         init_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     bgls_result = bgls_simulator.sample(ghz, repetitions=100, seed=12)
@@ -118,9 +116,9 @@ def test_no_measurements():
     init_state = cirq.StateVectorSimulationState(
         qubits=(q0, q1, q2), initial_state=0
     )
-    bgls_simulator = bgls_sampler.Simulator(
+    bgls_simulator = bgls.Simulator(
         init_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     with pytest.raises(ValueError) as error_info:
@@ -143,9 +141,9 @@ def test_partial_measurements():
     init_state = cirq.StateVectorSimulationState(
         qubits=(q0, q1, q2), initial_state=0
     )
-    bgls_simulator = bgls_sampler.Simulator(
+    bgls_simulator = bgls.Simulator(
         init_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     bgls_result = bgls_simulator.sample(
@@ -170,9 +168,9 @@ def test_density_state():
     statevector_state = cirq.StateVectorSimulationState(
         qubits=(q0, q1, q2), initial_state=0
     )
-    statevector_simulator = bgls_sampler.Simulator(
+    statevector_simulator = bgls.Simulator(
         statevector_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     statevector_result = statevector_simulator.sample(
@@ -181,9 +179,9 @@ def test_density_state():
     density_state = cirq.DensityMatrixSimulationState(
         qubits=(q0, q1, q2), initial_state=0
     )
-    density_simulator = bgls_sampler.Simulator(
+    density_simulator = bgls.Simulator(
         density_state,
-        bgls_utils.compute_state_vector_probability,
+        bgls.state_vector_bitstring_probability,
         cirq.protocols.act_on,
     )
     density_result = density_simulator.sample(ghz, repetitions=100, seed=3)
