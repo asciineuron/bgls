@@ -8,26 +8,25 @@ State = TypeVar("State")
 
 
 def state_vector_bitstring_probability(
-        state_vector: cirq.sim.state_vector_simulation_state
-        .StateVectorSimulationState,
-        bitstring: str,
+    state_vector: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
+    bitstring: str,
 ) -> float:
     """
     For a cirq StateVectorSimulationState,
     returns the probability corresponding to a given bitstring
     """
     return (
-            np.abs(
-                cirq.to_valid_state_vector(state_vector.target_tensor)[
-                    int(bitstring, 2)
-                ]
-            )
-            ** 2
+        np.abs(
+            cirq.to_valid_state_vector(state_vector.target_tensor)[
+                int(bitstring, 2)
+            ]
+        )
+        ** 2
     )
 
 
 def density_matrix_bitstring_probability(
-        state: cirq.sim.DensityMatrixSimulationState, bitstring: str
+    state: cirq.sim.DensityMatrixSimulationState, bitstring: str
 ) -> float:
     """
     For a cirq DensityMatrixSimulationState,
