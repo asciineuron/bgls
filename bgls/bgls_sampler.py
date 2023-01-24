@@ -32,9 +32,7 @@ class Simulator:
         cirq.sim.simulator.check_all_resolved(resolved_circuit)
 
         if not circuit.are_any_measurements_terminal():
-            raise ValueError(
-                "Circuit has no terminal measurements to sample."
-            )
+            raise ValueError("No terminal measurements to sample.")
 
         records: Dict[str, np.ndarray] = {}
 
