@@ -1,5 +1,5 @@
 import cirq
-import bgls_sampler, bgls_utils
+import bgls
 import matplotlib.pyplot as plt
 
 # create GHZ circuit with measurement
@@ -24,9 +24,9 @@ init_state = cirq.StateVectorSimulationState(
 )
 
 # how to sample measurements with bgls
-bgls_simulator = bgls_sampler.Simulator(
+bgls_simulator = bgls.Simulator(
     init_state,
-    bgls_utils.state_vector_bitstring_probability,
+    bgls.state_vector_bitstring_probability,
     cirq.protocols.act_on,
 )
 
