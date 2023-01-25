@@ -16,5 +16,5 @@ algorithm for simulating quantum measurement without computing marginals."""
 from .bgls_sampler import Simulator
 from .bgls_utils import *
 
-__version__ = "0.1.0dev"
+__version__ = "0.1.0"
 __author__ = "Alex Shapiro"
