@@ -1,26 +1,43 @@
-# this will give demonstrations on how our sampler is to be used
-# as well as providing clear development targets to satisfy
-
 import cirq
-from module import bgls_simulator
+import bgls
+import matplotlib.pyplot as plt
 
-# create GHZ circuit
+# create GHZ circuit with measurement
 q0, q1, q2 = cirq.LineQubit.range(3)
 circuit = cirq.Circuit(
     cirq.H(q0),
     cirq.CNOT(q0, q1),
-    cirq.CNOT(q1, q2),
-    # works equally well since all we need is a single measurement of all
-    # qubits:
-    cirq.measure([q0, q1, q2], key='result')
+    cirq.CNOT(q0, q2),
+    cirq.measure([q0, q1, q2], key="result"),
 )
 
-# how to sample measurements with cirq  default:
+# how to sample measurements with cirq default:
 cirq_simulator = cirq.Simulator()
-cirq_results = cirq_simulator.run(circuit, repetitions=3)
+cirq_results = cirq_simulator.run(circuit, repetitions=100)
 print(cirq_results)
+_ = cirq.plot_state_histogram(cirq_results, plt.subplot())
+plt.show()
 
-# how to sample with our sampler:
-bgls_simulator = bgls_simulator.BglsSimulator()
-bgls_results = bgls_simulator.run(circuit, repetitions=2)
+# initialize state for bgls:
+init_state = cirq.StateVectorSimulationState(
+    qubits=(q0, q1, q2), initial_state=0
+)
+
+# how to sample measurements with bgls
+bgls_simulator = bgls.Simulator(
+    init_state,
+    bgls.state_vector_bitstring_probability,
+    cirq.protocols.act_on,
+)
+
+bgls_results = bgls_simulator.sample(circuit, repetitions=100)
 print(bgls_results)
+_ = cirq.plot_state_histogram(bgls_results, plt.subplot())
+plt.show()
+
+# for a single sampling, can get raw bitstring:
+bitstring = bgls_simulator.sample_core(
+    circuit,
+    rng=cirq.value.parse_random_state(None),
+)
+print(bitstring)

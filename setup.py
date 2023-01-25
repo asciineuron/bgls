@@ -13,7 +13,6 @@
 
 from setuptools import setup, find_packages
 
-
 with open("VERSION.txt", "r") as f:
     __version__ = f.read().strip()
 
@@ -36,7 +35,7 @@ setup(
     version=__version__,
     install_requires=requirements,
     extras_require={"development": set(dev_requirements)},
-    packages=find_packages(),
+    packages=['bgls'],
     include_package_data=True,
     description="Implementation of the gate-by-gate sampling algorithm.",
     long_description=open("README.md", encoding="utf-8").read(),
