@@ -26,10 +26,9 @@ State = TypeVar("State")
 class Simulator(cirq.SimulatesSamples):
     def __init__(
         self,
-        initial_state: State | None,
-        apply_gate: Callable[[cirq.Operation, State], None]
-        | None,  # TODO: Decide on return value.
-        compute_probability: Callable[[State, str], float] | None,
+        initial_state: State,
+        apply_gate: Callable[[cirq.Operation, State], None], # TODO: Decide on return value.
+        compute_probability: Callable[[State, str], float],
         seed: cirq.RANDOM_STATE_OR_SEED_LIKE = None,
     ) -> None:
         """Initialize a BGLS Simulator.
