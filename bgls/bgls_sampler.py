@@ -13,7 +13,7 @@
 """Defines the BGLS Simulator."""
 
 import itertools
-from typing import TypeVar, Callable, Any, Dict, List
+from typing import TypeVar, Callable, Dict, List
 
 import numpy as np
 
@@ -27,7 +27,9 @@ class Simulator(cirq.SimulatesSamples):
     def __init__(
         self,
         initial_state: State,
-        apply_gate: Callable[[cirq.Operation, State], None], # TODO: Decide on return value.
+        apply_gate: Callable[
+            [cirq.Operation, State], None
+        ],  # TODO: Decide on return value.
         compute_probability: Callable[[State, str], float],
         seed: cirq.RANDOM_STATE_OR_SEED_LIKE = None,
     ) -> None:
