@@ -93,10 +93,10 @@ class Simulator(cirq.SimulatesSamples):
     ) -> Dict[str, np.ndarray]:
         records: Dict[str, np.ndarray] = {}
         """Returns a number of measurements by simulating the circuit.
-        
+
         Args:
             circuit: The circuit to simulate.
-            repetitions: The number of times to simulate the circuit 
+            repetitions: The number of times to simulate the circuit
                 (number of measurements to return).
         """
         for rep in range(repetitions):
