@@ -14,8 +14,6 @@
 
 import pytest
 
-import numpy as np
-
 import cirq
 
 import bgls
@@ -108,25 +106,28 @@ def test_intermediate_measurements():
     )
     assert result_with_intermediate_measurements == result
 
-#
-#
-# def test_no_measurements():
-#     # Sampling a circuit without final measurement raises a ValueError
-#     q0, q1, q2 = cirq.LineQubit.range(3)
-#     ghz = cirq.Circuit(cirq.H(q0), cirq.CNOT(q0, q1), cirq.CNOT(q0, q2))
-#     init_state = cirq.StateVectorSimulationState(
-#         qubits=(q0, q1, q2), initial_state=0
-#     )
-#     bgls_simulator = bgls.Simulator(
-#         init_state,
-#         bgls.state_vector_bitstring_probability,
-#         cirq.protocols.act_on,
-#     )
-#     with pytest.raises(ValueError) as error_info:
-#         bgls_result = bgls_simulator.sample(
-#             ghz,
-#             repetitions=100,
-#         )
+
+def test_run_with_no_terminal_measurements_raises_value_error():
+    """Tests simulating a circuit without terminal measurements raises a
+    ValueError.
+    """
+    q = cirq.LineQubit(0)
+    circuit = cirq.Circuit(cirq.H(q))
+
+    sim = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(q,), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.state_vector_bitstring_probability,
+    )
+
+    with pytest.raises(ValueError):
+        sim.run(circuit)
+
+    circuit.append([cirq.measure(q), cirq.H(q)])
+
+    with pytest.raises(ValueError):
+        sim.run(circuit)
+
 #
 #
 # def test_partial_measurements():
