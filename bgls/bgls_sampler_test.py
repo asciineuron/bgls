@@ -14,6 +14,8 @@
 
 import pytest
 
+import numpy as np
+
 import cirq
 
 import bgls
@@ -106,42 +108,6 @@ def test_intermediate_measurements():
     )
     assert result_with_intermediate_measurements == result
 
-
-# def test_multiple_measurements():
-#     # Distributing final measurement across multiple gates has same behavior
-#     # as a single measurement of all qubits
-#     q0, q1, q2 = cirq.LineQubit.range(3)
-#     ghz = cirq.Circuit(
-#         cirq.H(q0),
-#         cirq.CNOT(q0, q1),
-#         cirq.CNOT(q0, q2),
-#         cirq.measure([q0, q1, q2], key="result"),
-#     )
-#     ghz_multiple = cirq.Circuit(
-#         cirq.H(q0),
-#         cirq.CNOT(q0, q1),
-#         cirq.CNOT(q0, q2),
-#         cirq.measure([q0, q2], key="result1st"),
-#         cirq.measure([q1], key="result2nd"),
-#     )
-#     init_state = cirq.StateVectorSimulationState(
-#         qubits=(q0, q1, q2), initial_state=0
-#     )
-#     bgls_simulator = bgls.Simulator(
-#         init_state,
-#         bgls.state_vector_bitstring_probability,
-#         cirq.protocols.act_on,
-#     )
-#     bgls_result = bgls_simulator.sample(ghz, repetitions=100, seed=12)
-#     bgls_result_multiple = bgls_simulator.sample(
-#         ghz_multiple, repetitions=100, seed=12
-#     )
-#     # converting to histogram for checking recovers original values since
-#     # spread across multiple measurement keys
-#     np.testing.assert_array_equal(
-#         cirq.vis.get_state_histogram(bgls_result),
-#         cirq.vis.get_state_histogram(bgls_result_multiple),
-#     )
 #
 #
 # def test_no_measurements():
