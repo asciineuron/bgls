@@ -62,41 +62,49 @@ def test_results_same_when_seeded():
     result1 = sim1.run(circuit, repetitions=100)
     result2 = sim2.run(circuit, repetitions=100)
 
-    assert result1 == result2
+    assert result2 == result1
 
 
-#
-# def test_intermediate_measurements():
-#     # Intermediate measurement gates do not affect simulation
-#     q0, q1, q2 = cirq.LineQubit.range(3)
-#     ghz = cirq.Circuit(
-#         cirq.H(q0),
-#         cirq.CNOT(q0, q1),
-#         cirq.CNOT(q1, q2),
-#         cirq.measure([q0, q1, q2], key="result"),
-#     )
-#     ghz_intermediate = cirq.Circuit(
-#         cirq.H(q0),
-#         cirq.measure([q0, q2], key="result"),
-#         cirq.CNOT(q0, q1),
-#         cirq.measure([q0, q1, q2], key="result"),
-#         cirq.CNOT(q1, q2),
-#         cirq.measure([q0, q1, q2], key="result"),
-#     )
-#
-#     bgls_simulator = bgls.Simulator(
-#         cirq.StateVectorSimulationState(
-#             qubits=(q0, q1, q2), initial_state=0
-#         ),
-#         cirq.protocols.act_on,
-#         bgls.state_vector_bitstring_probability,
-#         seed=1,
-#     )
-#     bgls_result = bgls_simulator.sample(ghz, repetitions=100)
-#     bgls_result_intermediate = bgls_simulator.sample(
-#         ghz_intermediate, repetitions=100
-#     )
-#     assert bgls_result == bgls_result_intermediate
+def test_intermediate_measurements():
+    """Test simulation with/without intermediate measurements is the same."""
+    q0, q1, q2 = cirq.LineQubit.range(3)
+    ghz = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.CNOT(q1, q2),
+        cirq.measure([q0, q1, q2], key="result"),
+    )
+    ghz_intermediate = cirq.Circuit(
+        cirq.H(q0),
+        cirq.measure([q0, q2], key="result"),
+        cirq.CNOT(q0, q1),
+        cirq.measure([q0, q1, q2], key="result"),
+        cirq.CNOT(q1, q2),
+        cirq.measure([q0, q1, q2], key="result"),
+    )
+
+    sim = bgls.Simulator(
+        cirq.StateVectorSimulationState(
+            qubits=(q0, q1, q2), initial_state=0
+        ),
+        cirq.protocols.act_on,
+        bgls.state_vector_bitstring_probability,
+        seed=1,
+    )
+    result = sim.run(ghz, repetitions=100)
+
+    sim = bgls.Simulator(
+        cirq.StateVectorSimulationState(
+            qubits=(q0, q1, q2), initial_state=0
+        ),
+        cirq.protocols.act_on,
+        bgls.state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_with_intermediate_measurements = sim.run(
+        ghz_intermediate, repetitions=100
+    )
+    assert result_with_intermediate_measurements == result
 
 
 # def test_multiple_measurements():
