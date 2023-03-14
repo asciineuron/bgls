@@ -158,33 +158,32 @@ def test_run_with_no_terminal_measurements_raises_value_error():
 #     assert set(bgls_result.histogram(key="result")).issubset({0, 3})
 #
 #
-# def test_density_state():
-#     # Density matrix simulation yields the same result as state vector
-#     q0, q1, q2 = cirq.LineQubit.range(3)
-#     ghz = cirq.Circuit(
-#         cirq.H(q0),
-#         cirq.CNOT(q0, q1),
-#         cirq.CNOT(q0, q2),
-#         cirq.measure([q0, q1, q2], key="result"),
-#     )
-#     statevector_state = cirq.StateVectorSimulationState(
-#         qubits=(q0, q1, q2), initial_state=0
-#     )
-#     statevector_simulator = bgls.Simulator(
-#         statevector_state,
-#         bgls.state_vector_bitstring_probability,
-#         cirq.protocols.act_on,
-#     )
-#     statevector_result = statevector_simulator.sample(
-#         ghz, repetitions=100, seed=3
-#     )
-#     density_state = cirq.DensityMatrixSimulationState(
-#         qubits=(q0, q1, q2), initial_state=0
-#     )
-#     density_simulator = bgls.Simulator(
-#         density_state,
-#         bgls.state_vector_bitstring_probability,
-#         cirq.protocols.act_on,
-#     )
-#     density_result = density_simulator.sample(ghz, repetitions=100, seed=3)
-#     assert statevector_result == density_result
+
+
+def test_run_with_density_matrix_simulator():
+    # Density matrix simulation yields the same result as state vector
+    a, b, c = cirq.LineQubit.range(3)
+    circuit = cirq.Circuit(
+        cirq.H(a),
+        cirq.CNOT(a, b),
+        cirq.X.on(c),
+        cirq.measure([a, b, c], key="z"),
+    )
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
+    sim_density_matrix = bgls.Simulator(
+        cirq.DensityMatrixSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        cirq.protocols.act_on,
+        bgls.density_matrix_bitstring_probability,
+        seed=1,
+    )
+    result_density_matrix = sim_density_matrix.run(circuit, repetitions=100)
+
+    assert result_density_matrix == result_state_vector
