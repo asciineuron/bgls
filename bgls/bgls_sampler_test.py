@@ -150,7 +150,7 @@ def test_measure_subset_of_qubits_yields_correct_results():
 
 def test_run_with_density_matrix_simulator():
     """Test sampled bitstrings are same when using a density matrix simulator
-    and a statevector simulation.
+    and a statevector simulator.
     """
     a, b, c = cirq.LineQubit.range(3)
     circuit = cirq.Circuit(
