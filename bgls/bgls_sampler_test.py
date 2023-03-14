@@ -76,9 +76,9 @@ def test_intermediate_measurements():
     )
     ghz_intermediate = cirq.Circuit(
         cirq.H(q0),
-        cirq.measure([q0, q2], key="result"),
+        cirq.measure([q0, q2], key="intermediate1"),
         cirq.CNOT(q0, q1),
-        cirq.measure([q0, q1, q2], key="result"),
+        cirq.measure([q0, q1, q2], key="intermediate2"),
         cirq.CNOT(q1, q2),
         cirq.measure([q0, q1, q2], key="result"),
     )
