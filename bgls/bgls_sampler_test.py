@@ -84,9 +84,7 @@ def test_intermediate_measurements():
     )
 
     sim = bgls.Simulator(
-        cirq.StateVectorSimulationState(
-            qubits=(q0, q1, q2), initial_state=0
-        ),
+        cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
         cirq.protocols.act_on,
         bgls.state_vector_bitstring_probability,
         seed=1,
@@ -94,9 +92,7 @@ def test_intermediate_measurements():
     result = sim.run(ghz, repetitions=100)
 
     sim = bgls.Simulator(
-        cirq.StateVectorSimulationState(
-            qubits=(q0, q1, q2), initial_state=0
-        ),
+        cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
         cirq.protocols.act_on,
         bgls.state_vector_bitstring_probability,
         seed=1,
@@ -128,40 +124,34 @@ def test_run_with_no_terminal_measurements_raises_value_error():
     with pytest.raises(ValueError):
         sim.run(circuit)
 
-#
-#
-# def test_partial_measurements():
-#     # Measuring only some final qubits yields the same distribution,
-#     # but with bitstring int rep matching the subset of measured bits
-#     q0, q1, q2 = cirq.LineQubit.range(3)
-#     ghz = cirq.Circuit(
-#         cirq.H(q0),
-#         cirq.CNOT(q0, q1),
-#         cirq.CNOT(q0, q2),
-#         cirq.measure([q0, q2], key="result"),
-#     )
-#     init_state = cirq.StateVectorSimulationState(
-#         qubits=(q0, q1, q2), initial_state=0
-#     )
-#     bgls_simulator = bgls.Simulator(
-#         init_state,
-#         bgls.state_vector_bitstring_probability,
-#         cirq.protocols.act_on,
-#     )
-#     bgls_result = bgls_simulator.sample(
-#         ghz,
-#         repetitions=100,
-#     )
-#     # here because ghz, still only get low and high-end values with equal
-#     # prob, but now 0 and 3 (ie 00 11) rather than 0 and 7 (000 111)
-#     # can assert these are the only measured values
-#     assert set(bgls_result.histogram(key="result")).issubset({0, 3})
-#
-#
+
+def test_measure_subset_of_qubits_yields_correct_results():
+    """Tests measuring a subset of qubits yields the expected results."""
+    q0, q1, q2 = cirq.LineQubit.range(3)
+    ghz = cirq.Circuit(
+        cirq.H(q0),
+        cirq.CNOT(q0, q1),
+        cirq.CNOT(q0, q2),
+        cirq.measure([q0, q2], key="result"),
+    )
+    sim = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.state_vector_bitstring_probability,
+    )
+    result = sim.run(
+        ghz,
+        repetitions=100,
+    )
+
+    # Should only sample bitstrings 00 and 11 (integers 0 and 3).
+    assert set(result.histogram(key="result")).issubset({0, 3})
 
 
 def test_run_with_density_matrix_simulator():
-    # Density matrix simulation yields the same result as state vector
+    """Test sampled bitstrings are same when using a density matrix simulator
+    and a statevector simulation.
+    """
     a, b, c = cirq.LineQubit.range(3)
     circuit = cirq.Circuit(
         cirq.H(a),
@@ -177,9 +167,7 @@ def test_run_with_density_matrix_simulator():
     )
     result_state_vector = sim_state_vector.run(circuit, repetitions=100)
     sim_density_matrix = bgls.Simulator(
-        cirq.DensityMatrixSimulationState(
-            qubits=(a, b, c), initial_state=0
-        ),
+        cirq.DensityMatrixSimulationState(qubits=(a, b, c), initial_state=0),
         cirq.protocols.act_on,
         bgls.density_matrix_bitstring_probability,
         seed=1,
