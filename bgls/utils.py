@@ -18,20 +18,20 @@ import cirq
 
 
 def cirq_state_vector_bitstring_probability(
-    state_vector: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
+    state_vector_state: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
     bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.StateVectorSimulationState` (|ψ⟩), i.e. |⟨z|ψ⟩|^2.
 
     Args:
-        state_vector: State vector |ψ⟩ as a
+        state_vector_state: State vector |ψ⟩ as a
             `cirq.StateVectorSimulationState`.
         bitstring: Bitstring |z⟩ as a binary string.
     """
     return (
         np.abs(
-            cirq.to_valid_state_vector(state_vector.target_tensor)[
+            cirq.to_valid_state_vector(state_vector_state.target_tensor)[
                 int(bitstring, 2)
             ]
         )
@@ -40,19 +40,19 @@ def cirq_state_vector_bitstring_probability(
 
 
 def cirq_density_matrix_bitstring_probability(
-    density_matrix: cirq.sim.DensityMatrixSimulationState, bitstring: str
+    density_matrix_state: cirq.sim.DensityMatrixSimulationState, bitstring: str
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.DensityMatrixSimulationState` (ρ), i.e. ⟨z|ρ|z⟩.
 
     Args:
-        density_matrix: Density matrix ρ as a
+        density_matrix_state: Density matrix ρ as a
             `cirq.DensityMatrixSimulationState`.
         bitstring: Bitstring |z⟩ as a binary string.
     """
     num_qubits = len(bitstring)
     index = int(bitstring, 2)
     density_matrix = cirq.to_valid_density_matrix(
-        density_matrix.target_tensor, num_qubits
+        density_matrix_state.target_tensor, num_qubits
     )
     return np.abs(density_matrix[index, index])
