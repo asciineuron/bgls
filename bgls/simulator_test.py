@@ -91,8 +91,6 @@ def test_intermediate_measurements():
     )
     result = sim.run(ghz, repetitions=100)
 
-    cirq.StateVectorSimulationState.sample
-
     sim = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
         cirq.protocols.act_on,
