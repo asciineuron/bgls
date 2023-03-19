@@ -39,7 +39,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
             qubits=qubits, initial_state=0
         ),
         apply_gate=cirq.protocols.act_on,
-        compute_probability=bgls.state_vector_bitstring_probability,
+        compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
@@ -54,7 +54,7 @@ def test_results_same_when_seeded():
     sim_params = (
         cirq.StateVectorSimulationState(qubits=(q,), initial_state=0),
         cirq.protocols.act_on,
-        bgls.state_vector_bitstring_probability,
+        bgls.utils.cirq_state_vector_bitstring_probability,
     )
     sim1 = bgls.Simulator(*sim_params, seed=1)
     sim2 = bgls.Simulator(*sim_params, seed=1)
@@ -86,15 +86,17 @@ def test_intermediate_measurements():
     sim = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
         cirq.protocols.act_on,
-        bgls.state_vector_bitstring_probability,
+        bgls.utils.cirq_state_vector_bitstring_probability,
         seed=1,
     )
     result = sim.run(ghz, repetitions=100)
 
+    cirq.StateVectorSimulationState.sample
+
     sim = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
         cirq.protocols.act_on,
-        bgls.state_vector_bitstring_probability,
+        bgls.utils.cirq_state_vector_bitstring_probability,
         seed=1,
     )
     result_with_intermediate_measurements = sim.run(
@@ -113,7 +115,7 @@ def test_run_with_no_terminal_measurements_raises_value_error():
     sim = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=(q,), initial_state=0),
         cirq.protocols.act_on,
-        bgls.state_vector_bitstring_probability,
+        bgls.utils.cirq_state_vector_bitstring_probability,
     )
 
     with pytest.raises(ValueError):
@@ -137,7 +139,7 @@ def test_measure_subset_of_qubits_yields_correct_results():
     sim = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
         cirq.protocols.act_on,
-        bgls.state_vector_bitstring_probability,
+        bgls.utils.cirq_state_vector_bitstring_probability,
     )
     result = sim.run(
         ghz,
@@ -162,14 +164,14 @@ def test_run_with_density_matrix_simulator():
     sim_state_vector = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
         cirq.protocols.act_on,
-        bgls.state_vector_bitstring_probability,
+        bgls.utils.cirq_state_vector_bitstring_probability,
         seed=1,
     )
     result_state_vector = sim_state_vector.run(circuit, repetitions=100)
     sim_density_matrix = bgls.Simulator(
         cirq.DensityMatrixSimulationState(qubits=(a, b, c), initial_state=0),
         cirq.protocols.act_on,
-        bgls.density_matrix_bitstring_probability,
+        bgls.utils.cirq_density_matrix_bitstring_probability,
         seed=1,
     )
     result_density_matrix = sim_density_matrix.run(circuit, repetitions=100)
