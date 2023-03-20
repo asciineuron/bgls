@@ -43,7 +43,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2**nqubits - 1})
+    assert measurements.issubset({0, 2 ** nqubits - 1})
 
 
 def test_results_same_when_seeded():
@@ -175,3 +175,33 @@ def test_run_with_density_matrix_simulator():
     result_density_matrix = sim_density_matrix.run(circuit, repetitions=100)
 
     assert result_density_matrix == result_state_vector
+
+
+def test_run_with_stabilizer_ch_simulator():
+    """Test sampled bitstrings are same when using a state vector ch form
+    simulator and a statevector simulator.
+    """
+    a, b, c = cirq.LineQubit.range(3)
+    circuit = cirq.Circuit(
+        cirq.H(a),
+        cirq.CNOT(a, b),
+        cirq.X.on(c),
+        cirq.measure([a, b, c], key="z"),
+    )
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(qubits=(a, b, c),
+                                             initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
+
+    assert result_stabilizer_ch == result_state_vector
