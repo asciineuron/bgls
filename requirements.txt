@@ -1,2 +1,1 @@
-cirq~=1.0.0
-numpy~=1.20
+cirq-core~=1.0.0

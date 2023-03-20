@@ -10,8 +10,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from setuptools import setup
 
-from setuptools import setup, find_packages
 
 with open("VERSION.txt", "r") as f:
     __version__ = f.read().strip()
