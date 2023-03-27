@@ -18,9 +18,8 @@ import cirq
 
 
 def cirq_state_vector_bitstring_probability(
-        state_vector_state:
-        cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
-        bitstring: str,
+    state_vector_state: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
+    bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.StateVectorSimulationState` (|ψ⟩), i.e. |⟨z|ψ⟩|^2.
@@ -31,18 +30,18 @@ def cirq_state_vector_bitstring_probability(
         bitstring: Bitstring |z⟩ as a binary string.
     """
     return (
-            np.abs(
-                cirq.to_valid_state_vector(state_vector_state.target_tensor)[
-                    int(bitstring, 2)
-                ]
-            )
-            ** 2
+        np.abs(
+            cirq.to_valid_state_vector(state_vector_state.target_tensor)[
+                int(bitstring, 2)
+            ]
+        )
+        ** 2
     )
 
 
 def cirq_density_matrix_bitstring_probability(
-        density_matrix_state: cirq.sim.DensityMatrixSimulationState,
-        bitstring: str
+    density_matrix_state: cirq.sim.DensityMatrixSimulationState,
+    bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.DensityMatrixSimulationState` (ρ), i.e. ⟨z|ρ|z⟩.
@@ -61,7 +60,20 @@ def cirq_density_matrix_bitstring_probability(
 
 
 def cirq_stabilizer_ch_bitstring_probability(
-        stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
-        bitstring: str) -> float:
-    state_vector = stabilizer_ch_form_state.state.state_vector()
-    return np.abs(state_vector[int(bitstring, 2)]) ** 2
+    stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
+    bitstring: str,
+) -> float:
+    """Returns the probability of measuring the `bitstring` (|z⟩) in the
+    `cirq.StabilizerChFormSimulationState` (U_C U_H|s⟩), i.e. |⟨z|ψ⟩|^2.
+
+    Args:
+        stabilizer_ch_form_state: Stabilizer state in CH form (arxiv:
+        1808.00128) as a 'cirq.StabilizerChFormSimulationState'.
+        bitstring: Bitstring |z⟩ as a binary string.
+
+    """
+    # the state is of type StabilizerStateChForm
+    state = stabilizer_ch_form_state.state
+    index = int(bitstring, 2)
+    # this runs in O(n^2) for an n qubit state
+    return np.abs(state.inner_product_of_state_and_x(index)) ** 2

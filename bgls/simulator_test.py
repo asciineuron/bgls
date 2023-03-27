@@ -43,7 +43,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2 ** nqubits - 1})
+    assert measurements.issubset({0, 2**nqubits - 1})
 
 
 def test_results_same_when_seeded():
@@ -196,8 +196,9 @@ def test_run_with_stabilizer_ch_simulator():
     )
     result_state_vector = sim_state_vector.run(circuit, repetitions=100)
     sim_stabilizer_ch = bgls.Simulator(
-        cirq.StabilizerChFormSimulationState(qubits=(a, b, c),
-                                             initial_state=0),
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
         cirq.protocols.act_on,
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
