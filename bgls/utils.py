@@ -12,9 +12,13 @@
 
 """Defines helper functions for simulation."""
 
+from typing import Callable
+
 import numpy as np
 
 import cirq
+
+import bgls
 
 
 def cirq_state_vector_bitstring_probability(
@@ -77,3 +81,31 @@ def cirq_stabilizer_ch_bitstring_probability(
     index = int(bitstring, 2)
     # this runs in O(n^2) for an n qubit state
     return np.abs(state.inner_product_of_state_and_x(index)) ** 2
+
+
+def apply_near_clifford_gate(
+    op: cirq.Operation,
+    state: bgls.simulator.State,
+    rng: np.random.RandomState = np.random.RandomState(),
+) -> None:
+    if cirq.has_stabilizer_effect(op):
+        cirq.protocols.act_on(op, state)
+    else:
+        # assuming T gate
+        # assert isinstance(op,
+        #                   cirq.ops.common_gates.ZPowGate) and \
+        #        op.gate.exponent == 0.25
+        probs = np.power(
+            np.abs(
+                [
+                    np.cos(np.pi / 8) - np.sin(np.pi / 8),
+                    np.sqrt(2.0)
+                    * np.exp(-(0 + 1j) * np.pi / 4)
+                    * np.sin(np.pi / 8),
+                ]
+            ),
+            2,
+        )
+        cand_gates = [cirq.I(op.qubits[0]), cirq.S(op.qubits[0])]
+        chosen_gate = rng.choice(cand_gates, p=probs / sum(probs))
+        cirq.protocols.act_on(chosen_gate, state)

@@ -19,8 +19,8 @@ import numpy as np
 
 import cirq
 
-
-State = TypeVar("State")
+# for now restrict to generic simulationstatebase which is subclassed
+State = TypeVar("State", bound=cirq.SimulationStateBase)
 
 
 class Simulator(cirq.SimulatesSamples):
