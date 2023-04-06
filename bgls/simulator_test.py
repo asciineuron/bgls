@@ -241,3 +241,79 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
     result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
 
     assert result_stabilizer_ch == result_state_vector
+
+
+def test_remains_clifford():
+    """Creating a large random circuit of clifford gates, the simulator
+    should remain clifford throughout.
+    """
+    a, b, c = cirq.LineQubit.range(3)
+    domain = {cirq.H: 1, cirq.CNOT: 2, cirq.S: 1}
+    clifford_circuit = cirq.testing.random_circuit(
+        [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
+    )
+    clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
+    for op in clifford_circuit.all_operations():
+        assert cirq.has_stabilizer_effect(op)
+
+    # use act_on, not near_clifford, to ensure it remains strictly clifford
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    result_stabilizer_ch = sim_stabilizer_ch.run(
+        clifford_circuit, repetitions=100
+    )
+
+
+def test_remains_near_clifford():
+    """Creating a large random circuit of clifford+T gates, the simulator
+    should remain clifford throughout i.e. expand to the clifford
+    approximation.
+    """
+    a, b, c = cirq.LineQubit.range(3)
+    domain = {cirq.H: 1, cirq.CNOT: 2, cirq.S: 1, cirq.T: 1}
+    clifford_circuit = cirq.testing.random_circuit(
+        [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
+    )
+    clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
+
+    # use act_on, not near_clifford, to ensure it remains strictly clifford
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        bgls.utils.apply_near_clifford_gate,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    result_stabilizer_ch = sim_stabilizer_ch.run(
+        clifford_circuit, repetitions=100
+    )
+
+
+def test_improved_random_circuit():
+    """Near clifford test works with updated random circuit function."""
+    a, b, c = cirq.LineQubit.range(3)
+    domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
+    clifford_circuit = bgls.utils.improved_random_circuit(
+        [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
+    )
+    clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
+
+    # use act_on, not near_clifford, to ensure it remains strictly clifford
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        bgls.utils.apply_near_clifford_gate,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    result_stabilizer_ch = sim_stabilizer_ch.run(
+        clifford_circuit, repetitions=100
+    )
