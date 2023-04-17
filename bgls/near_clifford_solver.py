@@ -4,8 +4,6 @@ import numpy as np
 
 import cirq
 
-import bgls
-
 
 def is_clifford_gate(op: cirq.Operation) -> bool:
     # could do cirq.has_stabilizer_effect(op), not sure if covers other

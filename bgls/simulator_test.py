@@ -265,9 +265,7 @@ def test_remains_clifford():
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
     )
-    result_stabilizer_ch = sim_stabilizer_ch.run(
-        clifford_circuit, repetitions=100
-    )
+    _ = sim_stabilizer_ch.run(clifford_circuit, repetitions=100)
 
 
 def test_remains_near_clifford():
@@ -291,9 +289,7 @@ def test_remains_near_clifford():
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
     )
-    result_stabilizer_ch = sim_stabilizer_ch.run(
-        clifford_circuit, repetitions=100
-    )
+    _ = sim_stabilizer_ch.run(clifford_circuit, repetitions=100)
 
 
 def test_improved_random_circuit():
@@ -314,6 +310,4 @@ def test_improved_random_circuit():
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
     )
-    result_stabilizer_ch = sim_stabilizer_ch.run(
-        clifford_circuit, repetitions=100
-    )
+    _ = sim_stabilizer_ch.run(clifford_circuit, repetitions=100)

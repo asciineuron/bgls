@@ -20,4 +20,5 @@ from bgls.utils import (
     cirq_state_vector_bitstring_probability,
     cirq_density_matrix_bitstring_probability,
     cirq_stabilizer_ch_bitstring_probability,
+    apply_near_clifford_gate,
 )

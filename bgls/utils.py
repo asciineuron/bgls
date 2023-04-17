@@ -12,7 +12,7 @@
 
 """Defines helper functions for simulation."""
 
-from typing import *
+from typing import Union, Sequence, Optional, Set, List
 
 import numpy as np
 
