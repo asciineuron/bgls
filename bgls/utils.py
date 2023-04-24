@@ -16,6 +16,8 @@ import numpy as np
 
 import cirq
 
+import cirq.contrib.quimb.mps_simulator
+
 
 def cirq_state_vector_bitstring_probability(
     state_vector_state: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
@@ -56,3 +58,18 @@ def cirq_density_matrix_bitstring_probability(
         density_matrix_state.target_tensor, num_qubits
     )
     return np.abs(density_matrix[index, index])
+
+
+def cirq_mps_bitstring_probability(
+    mps: cirq.contrib.quimb.MPSState, bitstring: str
+) -> float:
+    """
+    Returns the probability of measuring the `bitstring` (|z⟩) in the
+    'cirq.contrib.quimb.MPSState' mps.
+    Args:
+        mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
+        bitstring: Bitstring |z⟩ as a binary string.
+    """
+    # TODO investigate runtime and if there is a better way to do this
+    state_vec = mps.state_vector()
+    return np.abs(state_vec[int(bitstring, 2)]) ** 2
