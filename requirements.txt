@@ -1,2 +1,1 @@
-python<=3.10.0
 cirq-core>=1.1.0
