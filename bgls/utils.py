@@ -88,6 +88,16 @@ def apply_near_clifford_gate(
     state: bgls.simulator.State,
     rng: np.random.RandomState = np.random.RandomState(),
 ) -> None:
+    """
+    Applies a Clifford+T gate to a state. If the gate is Clifford,
+    apply normally, else choose one of the gates in the Clifford-expansion
+    to apply.
+
+    Parameters:
+        op: operation to apply.
+        state: simulator state to update.
+        rng: rng for controlling gate-expansion decisions.
+    """
     if cirq.has_stabilizer_effect(op):
         cirq.protocols.act_on(op, state)
     else:
@@ -152,9 +162,7 @@ def improved_random_circuit(
         The randomly generated Circuit.
     """
     if not 0 < op_density <= 1:
-        raise ValueError(
-            f"op_density must be in (0, 1] but was {op_density}."
-        )
+        raise ValueError(f"op_density must be in (0, 1] but was {op_density}.")
     if gate_domain is None:
         gate_domain = {
             cirq.X,
