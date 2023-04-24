@@ -1,2 +1,4 @@
 cirq-core>=1.1.0
 quimb
+opt_einsum
+autoray
