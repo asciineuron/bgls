@@ -77,13 +77,18 @@ def cirq_stabilizer_ch_bitstring_probability(
 
     """
     # the state is of type StabilizerStateChForm
-    state = stabilizer_ch_form_state.state
-    index = int(bitstring, 2)
     # this runs in O(n^2) for an n qubit state
-    return np.abs(state.inner_product_of_state_and_x(index)) ** 2
+    return (
+        np.abs(
+            stabilizer_ch_form_state.state.inner_product_of_state_and_x(
+                int(bitstring, 2)
+            )
+        )
+        ** 2
+    )
 
 
-def apply_near_clifford_gate(
+def act_on_near_clifford(
     op: cirq.Operation,
     state: bgls.simulator.State,
     rng: np.random.RandomState = np.random.RandomState(),
@@ -101,10 +106,12 @@ def apply_near_clifford_gate(
     if cirq.has_stabilizer_effect(op):
         cirq.protocols.act_on(op, state)
     else:
-        # assuming T gate
-        # assert isinstance(op,
-        #                   cirq.ops.common_gates.ZPowGate) and \
-        #        op.gate.exponent == 0.25
+        # assuming T gate:
+        assert (
+            isinstance(op.gate, cirq.ops.common_gates.ZPowGate)
+            and op.gate.exponent == 0.25
+        )
+
         probs = np.power(
             np.abs(
                 [
@@ -121,7 +128,7 @@ def apply_near_clifford_gate(
         cirq.protocols.act_on(chosen_gate, state)
 
 
-def improved_random_circuit(
+def generate_random_circuit(
     qubits: Union[Sequence[cirq.ops.Qid], int],
     n_moments: int,
     op_density: float,
@@ -162,7 +169,9 @@ def improved_random_circuit(
         The randomly generated Circuit.
     """
     if not 0 < op_density <= 1:
-        raise ValueError(f"op_density must be in (0, 1] but was {op_density}.")
+        raise ValueError(
+            f"op_density must be in (0, 1] but was {op_density}."
+        )
     if gate_domain is None:
         gate_domain = {
             cirq.X,

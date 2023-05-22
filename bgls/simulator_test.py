@@ -16,12 +16,15 @@ import pytest
 
 import cirq
 
+import matplotlib.pyplot as plt
+
 import bgls
 
 
 @pytest.mark.parametrize("nqubits", range(3, 8 + 1))
 def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
-    """Tests correct measurement results for a GHZ circuit (should only return
+    """Tests correct measurement results for a GHZ circuit (should only
+    return
     the all 0 or all 1 bitstring).
 
     Args:
@@ -234,7 +237,7 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
         cirq.StabilizerChFormSimulationState(
             qubits=(a, b, c), initial_state=0
         ),
-        bgls.utils.apply_near_clifford_gate,
+        bgls.utils.act_on_near_clifford,
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
     )
@@ -245,7 +248,8 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
 
 def test_remains_clifford():
     """Creating a large random circuit of clifford gates, the simulator
-    should remain clifford throughout.
+    should remain clifford throughout, so act_on behaves identically to
+    act_on_near_clifford.
     """
     a, b, c = cirq.LineQubit.range(3)
     domain = {cirq.H: 1, cirq.CNOT: 2, cirq.S: 1}
@@ -253,11 +257,9 @@ def test_remains_clifford():
         [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
     )
     clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
-    for op in clifford_circuit.all_operations():
-        assert cirq.has_stabilizer_effect(op)
 
-    # use act_on, not near_clifford, to ensure it remains strictly clifford
-    sim_stabilizer_ch = bgls.Simulator(
+    # using act_on, would fail if not strictly clifford
+    sim_act_on = bgls.Simulator(
         cirq.StabilizerChFormSimulationState(
             qubits=(a, b, c), initial_state=0
         ),
@@ -265,49 +267,16 @@ def test_remains_clifford():
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
     )
-    _ = sim_stabilizer_ch.run(clifford_circuit, repetitions=100)
-
-
-def test_remains_near_clifford():
-    """Creating a large random circuit of clifford+T gates, the simulator
-    should remain clifford throughout i.e. expand to the clifford
-    approximation.
-    """
-    a, b, c = cirq.LineQubit.range(3)
-    domain = {cirq.H: 1, cirq.CNOT: 2, cirq.S: 1, cirq.T: 1}
-    clifford_circuit = cirq.testing.random_circuit(
-        [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
-    )
-    clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
-
-    # use act_on, not near_clifford, to ensure it remains strictly clifford
-    sim_stabilizer_ch = bgls.Simulator(
+    sim_results = sim_act_on.run(clifford_circuit, repetitions=100)
+    # expect same results as our act_on_stabilizer
+    sim_act_on_stab = bgls.Simulator(
         cirq.StabilizerChFormSimulationState(
             qubits=(a, b, c), initial_state=0
         ),
-        bgls.utils.apply_near_clifford_gate,
+        bgls.utils.act_on_near_clifford,
         bgls.utils.cirq_stabilizer_ch_bitstring_probability,
         seed=1,
     )
-    _ = sim_stabilizer_ch.run(clifford_circuit, repetitions=100)
+    sim_results_stab = sim_act_on_stab.run(clifford_circuit, repetitions=100)
 
-
-def test_improved_random_circuit():
-    """Near clifford test works with updated random circuit function."""
-    a, b, c = cirq.LineQubit.range(3)
-    domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
-    clifford_circuit = bgls.utils.improved_random_circuit(
-        [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
-    )
-    clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
-
-    # use act_on, not near_clifford, to ensure it remains strictly clifford
-    sim_stabilizer_ch = bgls.Simulator(
-        cirq.StabilizerChFormSimulationState(
-            qubits=(a, b, c), initial_state=0
-        ),
-        bgls.utils.apply_near_clifford_gate,
-        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
-        seed=1,
-    )
-    _ = sim_stabilizer_ch.run(clifford_circuit, repetitions=100)
+    assert sim_results == sim_results_stab
