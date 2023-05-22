@@ -169,9 +169,7 @@ def generate_random_circuit(
         The randomly generated Circuit.
     """
     if not 0 < op_density <= 1:
-        raise ValueError(
-            f"op_density must be in (0, 1] but was {op_density}."
-        )
+        raise ValueError(f"op_density must be in (0, 1] but was {op_density}.")
     if gate_domain is None:
         gate_domain = {
             cirq.X,
