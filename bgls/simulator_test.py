@@ -16,8 +16,6 @@ import pytest
 
 import cirq
 
-import matplotlib.pyplot as plt
-
 import bgls
 
 
@@ -46,7 +44,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2**nqubits - 1})
+    assert measurements.issubset({0, 2 ** nqubits - 1})
 
 
 def test_results_same_when_seeded():

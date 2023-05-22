@@ -12,8 +12,6 @@
 
 """Tests for the BGLS Simulator near clifford solver."""
 
-import pytest
-
 import cirq
 
 import bgls
