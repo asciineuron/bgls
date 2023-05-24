@@ -25,7 +25,7 @@ def ith_bit(num: int, i: int) -> int:
 
 
 def circuit_clifford_decomposition(
-        circuit: cirq.Circuit, fidelity: float = 1.0
+    circuit: cirq.Circuit, fidelity: float = 1.0
 ) -> Tuple[List[cirq.Circuit], List[complex]]:
     """
     Returns an expansion of a Clifford+T+Rz circuit as a list of pure Clifford
@@ -52,7 +52,7 @@ def circuit_clifford_decomposition(
     if num_non_clifford == 0:
         return [circuit], [1.0 + 0.0j]
     else:
-        for i in range(int(fidelity * 2 ** num_non_clifford)):
+        for i in range(int(fidelity * 2**num_non_clifford)):
             circuit_expand = circuit.copy()
             amplitude = 1.0 + 0.0j
             for pos, op, qubit in non_clifford_moment_pos:
@@ -69,9 +69,9 @@ def circuit_clifford_decomposition(
                     )
                 else:
                     amplitude *= (
-                            np.sqrt(2.0)
-                            * np.exp(-(0 + 1j) * np.pi / 4)
-                            * np.sin(theta / 2)
+                        np.sqrt(2.0)
+                        * np.exp(-(0 + 1j) * np.pi / 4)
+                        * np.sin(theta / 2)
                     )
                     circuit_expand.batch_replace(
                         [(pos, cirq.T(qubit), cirq.S(qubit))]
