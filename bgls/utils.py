@@ -94,9 +94,9 @@ def act_on_near_clifford(
     rng: np.random.RandomState = np.random.RandomState(),
 ) -> None:
     """
-    Applies a Clifford+T gate to a state. If the gate is Clifford,
-    apply normally, else choose one of the gates in the Clifford-expansion
-    to apply.
+    Applies a Clifford+T (or more generically, Rz(theta)) gate to a state.
+    If the gate is Clifford, apply normally,
+    else choose one of the gates in the Clifford-expansion to apply.
 
     Parameters:
         op: operation to apply.
@@ -105,20 +105,18 @@ def act_on_near_clifford(
     """
     if cirq.has_stabilizer_effect(op):
         cirq.protocols.act_on(op, state)
-    else:
-        # assuming T gate:
-        assert (
-            isinstance(op.gate, cirq.ops.common_gates.ZPowGate)
-            and op.gate.exponent == 0.25
-        )
-
+    elif isinstance(op.gate, cirq.ops.common_gates.ZPowGate):
+        # note this includes Rz gates
+        theta = np.pi * op.gate.exponent
+        # normalizing s.t. Rz gates have 0 relative phase
+        phase = np.exp((0 + 1j) * theta * (0.5 - op.gate.global_shift))
         probs = np.power(
             np.abs(
                 [
-                    np.cos(np.pi / 8) - np.sin(np.pi / 8),
+                    np.cos(theta / 2) - np.sin(theta / 2),
                     np.sqrt(2.0)
                     * np.exp(-(0 + 1j) * np.pi / 4)
-                    * np.sin(np.pi / 8),
+                    * np.sin(theta / 2),
                 ]
             ),
             2,
@@ -126,6 +124,8 @@ def act_on_near_clifford(
         cand_gates = [cirq.I(op.qubits[0]), cirq.S(op.qubits[0])]
         chosen_gate = rng.choice(cand_gates, p=probs / sum(probs))
         cirq.protocols.act_on(chosen_gate, state)
+    else:
+        raise TypeError("Gate is not a z rotation gate!")
 
 
 def generate_random_circuit(
