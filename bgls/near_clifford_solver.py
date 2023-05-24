@@ -64,18 +64,14 @@ def circuit_clifford_decomposition(
 
                 if ith_bit(pos, i):
                     amplitude *= np.cos(theta / 2) - np.sin(theta / 2)
-                    circuit_expand.batch_replace(
-                        [(pos, cirq.T(qubit), cirq.I(qubit))]
-                    )
+                    circuit_expand.batch_replace([(pos, op, cirq.I(qubit))])
                 else:
                     amplitude *= (
                         np.sqrt(2.0)
                         * np.exp(-(0 + 1j) * np.pi / 4)
                         * np.sin(theta / 2)
                     )
-                    circuit_expand.batch_replace(
-                        [(pos, cirq.T(qubit), cirq.S(qubit))]
-                    )
+                    circuit_expand.batch_replace([(pos, op, cirq.S(qubit))])
 
             clifford_circuits.append(circuit_expand)
             circuit_amplitudes.append(amplitude)

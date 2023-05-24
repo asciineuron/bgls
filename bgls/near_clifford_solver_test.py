@@ -12,6 +12,9 @@
 
 """Tests for the BGLS Simulator near clifford solver."""
 
+import pytest
+import numpy as np
+
 import cirq
 
 import bgls
@@ -130,3 +133,34 @@ def test_larger_clifford_expansion():
     assert len(expanded_circuits) == int(fidelity * 2**num_t) and len(
         expanded_amplitudes
     ) == int(fidelity * 2**num_t)
+
+
+@pytest.mark.parametrize("rad", [0.1, 0.25, 1.0, np.pi + 1e-5])
+def test_rz_circuit_expansion(rad: float):
+    """The decomposition works on generic Rz gates as well."""
+    qubits = cirq.LineQubit.range(3)
+    domain = {cirq.H, cirq.CNOT, cirq.S, cirq.Rz(rads=rad)}
+    clifford_circuit = bgls.utils.generate_random_circuit(
+        qubits,
+        n_moments=50,
+        op_density=0.5,
+        gate_domain=domain,
+        random_state=1,
+    )
+    num_rz = 0
+    for op in clifford_circuit.all_operations():
+        if not cirq.has_stabilizer_effect(op) and (
+            isinstance(op.gate, cirq.ops.common_gates.ZPowGate)
+        ):
+            num_rz += 1
+    fidelity = 0.6
+    (
+        expanded_circuits,
+        expanded_amplitudes,
+    ) = bgls.near_clifford_solver.circuit_clifford_decomposition(
+        clifford_circuit, fidelity=fidelity
+    )
+
+    assert len(expanded_circuits) == int(fidelity * 2**num_rz) and len(
+        expanded_amplitudes
+    ) == int(fidelity * 2**num_rz)
