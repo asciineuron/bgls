@@ -13,16 +13,15 @@
 """Tests for the BGLS Simulator utilities."""
 
 import pytest
+import numpy as np
 
 import cirq
 
 import bgls
 
-import numpy as np
-
 
 @pytest.mark.parametrize("nqubits", range(3, 5 + 1))
-def test_improved_random_circuit(nqubits: int):
+def test_generate_random_circuit_matches_cirq_random_circuit(nqubits: int):
     """Our random circuit function matches cirqs' output."""
     qubits = cirq.LineQubit.range(nqubits)
     domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
@@ -49,7 +48,7 @@ def test_act_on_stabilizer_non_T():
     qubits = cirq.LineQubit.range(3)
     state = cirq.StateVectorSimulationState(qubits=qubits, initial_state=0)
     # fails for non zpowgate
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         gate = cirq.XPowGate(exponent=0.1)
         bgls.utils.act_on_near_clifford(gate.on(qubits[0]), state)
 

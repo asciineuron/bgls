@@ -18,6 +18,17 @@ import bgls
 import bgls.near_clifford_solver
 
 
+def expansions_equal(exp1, exp2):
+    # returns true if each list of circuits is the same (cannot convert to set)
+    # to check more easily
+    for circuit in exp1:
+        if circuit in exp2:
+            exp2.remove(circuit)
+        else:
+            return False
+    return True
+
+
 def test_expanded_clifford():
     """Each circuit in circuit_clifford_decomposition should be pure
     clifford"""
@@ -59,19 +70,11 @@ def test_pure_clifford():
     ) = bgls.near_clifford_solver.circuit_clifford_decomposition(
         clifford_circuit
     )
-
-    assert expanded_circuits[0] == clifford_circuit
-
-
-def expansions_equal(exp1, exp2):
-    # returns true if each list of circuits is the same (cannot convert to set)
-    # to check more easily
-    for circuit in exp1:
-        if circuit in exp2:
-            exp2.remove(circuit)
-        else:
-            return False
-    return True
+    assert (
+        len(expanded_circuits) == 1
+        and expanded_circuits[0] == clifford_circuit
+    )
+    assert len(expanded_amplitudes) == 1 and expanded_amplitudes[0] == 1.0
 
 
 def test_clifford_expansion():
@@ -96,3 +99,34 @@ def test_clifford_expansion():
     ]
 
     assert expansions_equal(expanded_circuits, test_exp)
+
+
+def test_larger_clifford_expansion():
+    """The number of circuits generated is fidelity * 2**num T gates"""
+    qubits = cirq.LineQubit.range(3)
+    domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
+    clifford_circuit = bgls.utils.generate_random_circuit(
+        qubits,
+        n_moments=50,
+        op_density=0.5,
+        gate_domain=domain,
+        random_state=1,
+    )
+    num_t = 0
+    for op in clifford_circuit.all_operations():
+        if (
+            isinstance(op.gate, cirq.ops.common_gates.ZPowGate)
+            and op.gate.exponent == 0.25
+        ):
+            num_t += 1
+    fidelity = 0.6
+    (
+        expanded_circuits,
+        expanded_amplitudes,
+    ) = bgls.near_clifford_solver.circuit_clifford_decomposition(
+        clifford_circuit, fidelity=fidelity
+    )
+
+    assert len(expanded_circuits) == int(fidelity * 2**num_t) and len(
+        expanded_amplitudes
+    ) == int(fidelity * 2**num_t)

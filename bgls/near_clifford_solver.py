@@ -25,10 +25,10 @@ def ith_bit(num: int, i: int) -> int:
 
 
 def circuit_clifford_decomposition(
-    circuit: cirq.Circuit, fidelity: float = 1.0
+        circuit: cirq.Circuit, fidelity: float = 1.0
 ) -> Tuple[List[cirq.Circuit], List[complex]]:
     """
-    Returns an expansion of a Clifford+T circuit as a list of pure Clifford
+    Returns an expansion of a Clifford+T+Rz circuit as a list of pure Clifford
     circuits ideally approximating it, as well as their amplitudes.
 
     Args:
@@ -42,30 +42,36 @@ def circuit_clifford_decomposition(
 
     non_clifford_moment_pos = []
     num_non_clifford = 0
-
     for i, mom in enumerate(circuit.moments):
         for op in mom.operations:
             if not cirq.has_stabilizer_effect(op):
+                assert isinstance(op.gate, cirq.ops.common_gates.ZPowGate)
                 num_non_clifford += 1
-                non_clifford_moment_pos.append((i, op.qubits[0]))
+                non_clifford_moment_pos.append((i, op, op.qubits[0]))
 
     if num_non_clifford == 0:
         return [circuit], [1.0 + 0.0j]
     else:
-        for i in range(int(fidelity * 2**num_non_clifford)):
+        for i in range(int(fidelity * 2 ** num_non_clifford)):
             circuit_expand = circuit.copy()
             amplitude = 1.0 + 0.0j
-            for pos, qubit in non_clifford_moment_pos:
+            for pos, op, qubit in non_clifford_moment_pos:
+                # determine amplitudes based on gate exponent:
+                theta = np.pi * op.gate.exponent
+                # normalizing s.t. Rz gates have 0 relative phase
+                phase = np.exp((0 + 1j) * theta * (0.5 - op.gate.global_shift))
+                amplitude *= phase
+
                 if ith_bit(pos, i):
-                    amplitude *= np.cos(np.pi / 8) - np.sin(np.pi / 8)
+                    amplitude *= np.cos(theta / 2) - np.sin(theta / 2)
                     circuit_expand.batch_replace(
                         [(pos, cirq.T(qubit), cirq.I(qubit))]
                     )
                 else:
                     amplitude *= (
-                        np.sqrt(2.0)
-                        * np.exp(-(0 + 1j) * np.pi / 4)
-                        * np.sin(np.pi / 8)
+                            np.sqrt(2.0)
+                            * np.exp(-(0 + 1j) * np.pi / 4)
+                            * np.sin(theta / 2)
                     )
                     circuit_expand.batch_replace(
                         [(pos, cirq.T(qubit), cirq.S(qubit))]

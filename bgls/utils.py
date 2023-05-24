@@ -108,8 +108,7 @@ def act_on_near_clifford(
     elif isinstance(op.gate, cirq.ops.common_gates.ZPowGate):
         # note this includes Rz gates
         theta = np.pi * op.gate.exponent
-        # normalizing s.t. Rz gates have 0 relative phase
-        phase = np.exp((0 + 1j) * theta * (0.5 - op.gate.global_shift))
+
         probs = np.power(
             np.abs(
                 [
@@ -125,7 +124,10 @@ def act_on_near_clifford(
         chosen_gate = rng.choice(cand_gates, p=probs / sum(probs))
         cirq.protocols.act_on(chosen_gate, state)
     else:
-        raise TypeError("Gate is not a z rotation gate!")
+        raise ValueError(
+            "Operation must be Clifford, T, or a z rotation. Was called on "
+            "the gate " + str(op.gate) + "."
+        )
 
 
 def generate_random_circuit(
