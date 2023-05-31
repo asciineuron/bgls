@@ -141,9 +141,7 @@ class Simulator(cirq.SimulatesSamples):
                         circuit.next_moment_operating_on(op.qubits, i + 1)
                         is None
                     ):
-                        meas_key = cirq.protocols.measurement_key_name(
-                            op.gate
-                        )
+                        meas_key = cirq.protocols.measurement_key_name(op.gate)
                         if meas_key not in keys_to_indices:
                             meas_indices = [qubit_index[q] for q in op.qubits]
                             keys_to_indices[meas_key] = meas_indices
