@@ -19,10 +19,10 @@ Indices and tables
 
 Bgls Simulator
 ================
-.. autoclass:: Simulator
+.. autoclass:: bgls.Simulator
     :members: run
 
 Bgls Utilities
 ================
-.. automodule:: utils
+.. automodule:: bgls.utils
     :members:
