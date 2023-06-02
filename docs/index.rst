@@ -3,8 +3,9 @@ Welcome to bgls's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
-     start.ipynb
+   :caption: Jupyter notebook examples:
+
+   start.ipynb
 
 
 Indices and tables
@@ -13,3 +14,14 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Bgls Simulator
+===========
+.. autoclass:: bgls.Simulator
+    :members: run
+
+Bgls Utilities
+======
+.. automodule:: bgls.utils
+    :members:
