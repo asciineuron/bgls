@@ -14,7 +14,7 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install -r dev_requirements.txt
       - name: Build HTML
-        run:
+        run: |
           make html
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
