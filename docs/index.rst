@@ -24,5 +24,5 @@ Bgls Simulator
 
 Bgls Utilities
 ================
-.. automodule:: bgls.utils
+.. automodule:: utils
     :members:
