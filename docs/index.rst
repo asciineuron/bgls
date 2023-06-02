@@ -6,7 +6,6 @@ Welcome to bgls's documentation!
    :caption: Jupyter notebook examples:
 
    start.ipynb
-   clifford_simulation.ipynb
 
 
 Indices and tables

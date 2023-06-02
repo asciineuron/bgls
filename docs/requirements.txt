@@ -1,3 +1,4 @@
 furo==2021.11.16
 myst_nb~=0.17.2
 cirq-core~=1.1.0
+bgls
