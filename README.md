@@ -5,6 +5,3 @@
 
 bgls is a cirq-interfacing implementation of the gate-by-gate quantum sampling
 algorithm described by https://arxiv.org/abs/2112.08499.
-
-Find code documentation and example
-notebooks [here](docs/_build/html/index.html)
