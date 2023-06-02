@@ -18,11 +18,11 @@ Indices and tables
 
 
 Bgls Simulator
-===========
-.. autoclass:: bgls.Simulator
+================
+.. autoclass:: Simulator
     :members: run
 
 Bgls Utilities
-======
-.. automodule:: bgls.utils
+================
+.. automodule:: utils
     :members:
