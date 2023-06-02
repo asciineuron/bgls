@@ -19,8 +19,8 @@ import numpy as np
 
 import cirq
 
-
-State = TypeVar("State")
+# for now restrict to generic simulationstatebase which is subclassed
+State = TypeVar("State", bound=cirq.SimulationStateBase)
 
 
 class Simulator(cirq.SimulatesSamples):
@@ -104,7 +104,11 @@ class Simulator(cirq.SimulatesSamples):
             for meas_key in keys_to_bitstrings:
                 if rep == 0 and meas_key not in records:
                     records[meas_key] = np.zeros(
-                        (repetitions, 1, len(keys_to_bitstrings[meas_key][-1]))
+                        (
+                            repetitions,
+                            1,
+                            len(keys_to_bitstrings[meas_key][-1]),
+                        )
                     )
                 records[meas_key][rep, 0, :] = [
                     int(bit) for bit in keys_to_bitstrings[meas_key][-1]

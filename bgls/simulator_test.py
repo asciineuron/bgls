@@ -13,6 +13,7 @@
 """Tests for the BGLS Simulator."""
 
 import pytest
+
 import numpy as np
 
 import cirq
@@ -23,7 +24,8 @@ import bgls
 
 @pytest.mark.parametrize("nqubits", range(3, 8 + 1))
 def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
-    """Tests correct measurement results for a GHZ circuit (should only return
+    """Tests correct measurement results for a GHZ circuit (should only
+    return
     the all 0 or all 1 bitstring).
 
     Args:
@@ -45,7 +47,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2**nqubits - 1})
+    assert measurements.issubset({0, 2 ** nqubits - 1})
 
 
 def test_results_same_when_seeded():
@@ -177,6 +179,108 @@ def test_run_with_density_matrix_simulator():
     result_density_matrix = sim_density_matrix.run(circuit, repetitions=100)
 
     assert result_density_matrix == result_state_vector
+
+
+def test_run_with_stabilizer_ch_simulator():
+    """Test sampled bitstrings are same when using a state vector ch form
+    simulator and a statevector simulator.
+    """
+    a, b, c = cirq.LineQubit.range(3)
+    circuit = cirq.Circuit(
+        cirq.H(a),
+        cirq.CNOT(a, b),
+        cirq.X.on(c),
+        cirq.measure([a, b, c], key="z"),
+    )
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
+
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
+
+    assert result_stabilizer_ch == result_state_vector
+
+
+def test_run_with_stabilizer_ch_simulator_near_clifford():
+    """Test sampled bitstrings are same when using a state vector ch form
+    simulator and a statevector simulator. Using apply_near_clifford_gate
+    can work with Clifford+T circuits as well.
+    """
+    a, b, c = cirq.LineQubit.range(3)
+    circuit = cirq.Circuit(
+        cirq.H(a),
+        cirq.CNOT(a, b),
+        cirq.X.on(c),
+        cirq.T(c),
+        cirq.measure([a, b, c], key="z"),
+    )
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
+
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        bgls.utils.act_on_near_clifford,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
+
+    assert result_stabilizer_ch == result_state_vector
+
+
+def test_remains_clifford():
+    """Creating a large random circuit of clifford gates, the simulator
+    should remain clifford throughout, so act_on behaves identically to
+    act_on_near_clifford.
+    """
+    a, b, c = cirq.LineQubit.range(3)
+    domain = {cirq.H: 1, cirq.CNOT: 2, cirq.S: 1}
+    clifford_circuit = cirq.testing.random_circuit(
+        [a, b, c], n_moments=100, op_density=0.5, gate_domain=domain
+    )
+    clifford_circuit = clifford_circuit + cirq.measure([a, b, c], key="z")
+
+    # using act_on, would fail if not strictly clifford
+    sim_act_on = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    sim_results = sim_act_on.run(clifford_circuit, repetitions=100)
+    # expect same results as our act_on_stabilizer
+    sim_act_on_stab = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(
+            qubits=(a, b, c), initial_state=0
+        ),
+        bgls.utils.act_on_near_clifford,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+    sim_results_stab = sim_act_on_stab.run(clifford_circuit, repetitions=100)
+
+    assert sim_results == sim_results_stab
 
 
 def test_run_with_mps_simulator():

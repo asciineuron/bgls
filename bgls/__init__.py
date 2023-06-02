@@ -19,5 +19,7 @@ from bgls.simulator import Simulator
 from bgls.utils import (
     cirq_state_vector_bitstring_probability,
     cirq_density_matrix_bitstring_probability,
-    cirq_mps_bitstring_probability,
+    cirq_stabilizer_ch_bitstring_probability,
+    act_on_near_clifford,
+    cirq_mps_bitstring_probability
 )
