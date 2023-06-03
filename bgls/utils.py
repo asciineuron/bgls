@@ -19,13 +19,14 @@ import numpy as np
 import cirq
 import cirq.contrib.quimb.mps_simulator
 
+import quimb.tensor as qtn
+
 import bgls
 
 
 def cirq_state_vector_bitstring_probability(
-        state_vector_state:
-        cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
-        bitstring: str,
+    state_vector_state: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
+    bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.StateVectorSimulationState` (|ψ⟩), i.e. |⟨z|ψ⟩|^2.
@@ -35,19 +36,20 @@ def cirq_state_vector_bitstring_probability(
             `cirq.StateVectorSimulationState`.
         bitstring: Bitstring |z⟩ as a binary string.
     """
+    num_qubits = len(state_vector_state.qubits)
     return (
-            np.abs(
-                cirq.to_valid_state_vector(state_vector_state.target_tensor)[
-                    int(bitstring, 2)
-                ]
-            )
-            ** 2
+        np.abs(
+            cirq.to_valid_state_vector(
+                state_vector_state.target_tensor, num_qubits=num_qubits
+            )[int(bitstring, 2)]
+        )
+        ** 2
     )
 
 
 def cirq_density_matrix_bitstring_probability(
-        density_matrix_state: cirq.sim.DensityMatrixSimulationState,
-        bitstring: str,
+    density_matrix_state: cirq.sim.DensityMatrixSimulationState,
+    bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.DensityMatrixSimulationState` (ρ), i.e. ⟨z|ρ|z⟩.
@@ -66,8 +68,8 @@ def cirq_density_matrix_bitstring_probability(
 
 
 def cirq_stabilizer_ch_bitstring_probability(
-        stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
-        bitstring: str,
+    stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
+    bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.StabilizerChFormSimulationState` (U_C U_H|s⟩), i.e. |⟨z|ψ⟩|^2.
@@ -81,19 +83,19 @@ def cirq_stabilizer_ch_bitstring_probability(
     # the state is of type StabilizerStateChForm
     # this runs in O(n^2) for an n qubit state
     return (
-            np.abs(
-                stabilizer_ch_form_state.state.inner_product_of_state_and_x(
-                    int(bitstring, 2)
-                )
+        np.abs(
+            stabilizer_ch_form_state.state.inner_product_of_state_and_x(
+                int(bitstring, 2)
             )
-            ** 2
+        )
+        ** 2
     )
 
 
 def act_on_near_clifford(
-        op: cirq.Operation,
-        state: bgls.simulator.State,
-        rng: np.random.RandomState = np.random.RandomState(),
+    op: cirq.Operation,
+    state: bgls.simulator.State,
+    rng: np.random.RandomState = np.random.RandomState(),
 ) -> None:
     """
     Applies a Clifford+T (or more generically, Rz(theta)) gate to a state.
@@ -133,11 +135,11 @@ def act_on_near_clifford(
 
 
 def generate_random_circuit(
-        qubits: Union[Sequence[cirq.ops.Qid], int],
-        n_moments: int,
-        op_density: float,
-        gate_domain: Optional[Set[cirq.Gate]] = None,
-        random_state: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
+    qubits: Union[Sequence[cirq.ops.Qid], int],
+    n_moments: int,
+    op_density: float,
+    gate_domain: Optional[Set[cirq.Gate]] = None,
+    random_state: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
 ) -> cirq.circuits.Circuit:
     """Generates a random circuit.
 
@@ -229,7 +231,7 @@ def generate_random_circuit(
 
 
 def cirq_mps_bitstring_probability(
-        mps: cirq.contrib.quimb.MPSState, bitstring: str
+    mps: cirq.contrib.quimb.MPSState, bitstring: str
 ) -> float:
     """
     Returns the probability of measuring the `bitstring` (|z⟩) in the
@@ -238,6 +240,13 @@ def cirq_mps_bitstring_probability(
         mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
         bitstring: Bitstring |z⟩ as a binary string.
     """
-    # TODO investigate runtime and if there is a better way to do this
-    state_vec = mps.state_vector()
-    return np.abs(state_vec[int(bitstring, 2)]) ** 2
+    M_subset = []
+    for i, Ai in enumerate(mps.M):
+        qubit_index = mps.i_str(i)
+        # selecting the component with matching bitstring:
+        A_subset = Ai.isel({qubit_index: int(bitstring[i])})
+        M_subset.append(A_subset)
+
+    tensor_network = qtn.TensorNetwork(M_subset)
+    state_vector = tensor_network.contract(inplace=False)
+    return np.power(np.abs(state_vector), 2)

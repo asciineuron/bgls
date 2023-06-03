@@ -18,6 +18,7 @@ import numpy as np
 
 import cirq
 import cirq.contrib.quimb.mps_simulator
+import quimb
 
 import bgls
 
@@ -47,7 +48,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2 ** nqubits - 1})
+    assert measurements.issubset({0, 2**nqubits - 1})
 
 
 def test_results_same_when_seeded():
@@ -283,19 +284,16 @@ def test_remains_clifford():
     assert sim_results == sim_results_stab
 
 
-def test_run_with_mps_simulator():
+def test_mps_results_match_state_vec():
     """Test sampled bitstrings are same when using a matrix product state
     simulator and a state vector simulator.
     """
-    a, b, c = cirq.LineQubit.range(3)
-    circuit = cirq.Circuit(
-        cirq.H(a),
-        cirq.CNOT(a, b),
-        cirq.X.on(c),
-        cirq.measure([a, b, c], key="z"),
-    )
+    qs = cirq.LineQubit.range(4)
+    circuit = cirq.testing.random_circuit(qs, n_moments=20, op_density=0.5)
+    circuit = circuit + cirq.measure(qs, key="z")
+
     sim_state_vector = bgls.Simulator(
-        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
+        cirq.StateVectorSimulationState(qubits=qs, initial_state=0),
         cirq.protocols.act_on,
         bgls.utils.cirq_state_vector_bitstring_probability,
         seed=1,
@@ -303,14 +301,14 @@ def test_run_with_mps_simulator():
     result_state_vector = sim_state_vector.run(circuit, repetitions=100)
 
     mps_state = cirq.contrib.quimb.MPSState(
-        qubits=(a, b, c), initial_state=0, prng=np.random.RandomState()
+        qubits=qs, initial_state=0, prng=np.random.RandomState()
     )
-    sim_density_matrix = bgls.Simulator(
+    sim_mps = bgls.Simulator(
         mps_state,
         cirq.protocols.act_on,
         bgls.utils.cirq_mps_bitstring_probability,
         seed=1,
     )
-    result_density_matrix = sim_density_matrix.run(circuit, repetitions=100)
+    result_mps = sim_mps.run(circuit, repetitions=100)
 
-    assert result_density_matrix == result_state_vector
+    assert result_mps == result_state_vector
