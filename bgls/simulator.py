@@ -100,7 +100,7 @@ class Simulator(cirq.SimulatesSamples):
         """
         records: Dict[str, np.ndarray] = {}
         for rep, keys_to_bitstrings in enumerate(
-            self._sample_bitstrings(circuit)
+            self._sample_bitstrings(circuit, repetitions)
         ):
             for meas_key in keys_to_bitstrings:
                 if rep == 0 and meas_key not in records:
@@ -150,33 +150,39 @@ class Simulator(cirq.SimulatesSamples):
 
             # Determine the candidate bitstrings to sample.
             op_support = {qubit_index[q] for q in op.qubits}
-            candidates = list(
-                itertools.product(
-                    *[
-                        ["0", "1"] if i in op_support else [b]
-                        for i, b in enumerate(bitstring)
+            candidates_list = []
+            joined_cands_list = []
+            candidate_probs_list = []
+            for bitstr in bitstrings:
+                candidates = list(
+                    itertools.product(
+                        *[
+                            ["0", "1"] if i in op_support else [b]
+                            for i, b in enumerate(bitstr)
+                        ]
+                    )
+                )
+                candidates_list.append(candidates)
+                joined_cands = ["".join(cand) for cand in candidates]
+                joined_cands_list.append(joined_cands)
+                # Compute probability of each candidate bitstring.
+                candidate_probs = np.asarray(
+                    [
+                        self._compute_probability(state, candidate)
+                        for candidate in joined_cands
                     ]
                 )
-            )
-            joined_cands = ["".join(cand) for cand in candidates]
-
-            # Compute probability of each candidate bitstring.
-            candidate_probs = np.asarray(
-                [
-                    self._compute_probability(state, candidate)
-                    for candidate in joined_cands
-                ]
-            )
-            # normalize
-            # candidate_probs = candidate_probs / sum(candidate_probs)
+                candidate_probs_list.append(candidate_probs)
 
             # Sample to get bitstring.
             for rep in range(repetitions):
                 bitstrings[rep] = "".join(
-                    candidates[
+                    candidates_list[rep][
                         self._rng.choice(
-                            range(len(candidates)),
-                            p=candidate_probs / sum(candidate_probs),
+                            a=range(len(candidates_list[rep])),
+                            replace=True,
+                            p=candidate_probs_list[rep]
+                            / sum(candidate_probs_list[rep]),
                         )
                     ]
                 )
@@ -192,7 +198,7 @@ class Simulator(cirq.SimulatesSamples):
                     "".join(
                         [
                             bit
-                            for i, bit in enumerate(bitstring)
+                            for i, bit in enumerate(bitstrings[rep])
                             if i in keys_to_indices[meas]
                         ]
                     )
