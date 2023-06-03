@@ -18,7 +18,6 @@ import numpy as np
 
 import cirq
 import cirq.contrib.quimb.mps_simulator
-import quimb
 
 import bgls
 
