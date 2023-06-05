@@ -129,8 +129,6 @@ class Simulator(cirq.SimulatesSamples):
         qubits = circuit.all_qubits()
         qubit_index = {q: i for i, q in enumerate(sorted(qubits))}
         bitstring = "0" * len(qubits)
-        # NOTE now bitstrings is the list of bitstrings to return i.e.
-        # multiple measurements
         bitstrings = [bitstring for _ in range(repetitions)]
         state = (
             self._initial_state.copy()
@@ -188,7 +186,6 @@ class Simulator(cirq.SimulatesSamples):
                 )
 
         # Return dict of list of bitstrings measured per gate.
-        # keys_to_bitstrings: Dict[str, List[str]] = {}
         keys_to_bitstrings: List[Dict[str, List[str]]] = [
             {} for _ in range(repetitions)
         ]
