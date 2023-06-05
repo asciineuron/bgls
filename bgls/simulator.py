@@ -91,7 +91,6 @@ class Simulator(cirq.SimulatesSamples):
         circuit: "cirq.AbstractCircuit",
         repetitions: int = 1,
     ) -> Dict[str, np.ndarray]:
-        records: Dict[str, np.ndarray] = {}
         """Returns a number of measurements by simulating the circuit.
 
         Args:
@@ -99,8 +98,10 @@ class Simulator(cirq.SimulatesSamples):
             repetitions: The number of times to simulate the circuit
                 (number of measurements to return).
         """
-        for rep in range(repetitions):
-            keys_to_bitstrings = self._sample_once(circuit)
+        records: Dict[str, np.ndarray] = {}
+        for rep, keys_to_bitstrings in enumerate(
+            self._sample_bitstrings(circuit, repetitions)
+        ):
             for meas_key in keys_to_bitstrings:
                 if rep == 0 and meas_key not in records:
                     records[meas_key] = np.zeros(
@@ -113,26 +114,27 @@ class Simulator(cirq.SimulatesSamples):
                 records[meas_key][rep, 0, :] = [
                     int(bit) for bit in keys_to_bitstrings[meas_key][-1]
                 ]
-
         return records
 
-    def _sample_once(
-        self, circuit: "cirq.AbstractCircuit"
-    ) -> Dict[str, List[str]]:
-        """Returns one measurement by simulating the circuit.
+    def _sample_bitstrings(
+        self, circuit: "cirq.AbstractCircuit", repetitions: int = 1
+    ) -> List[Dict[str, List[str]]]:
+        """Returns measurements by simulating the circuit.
 
         Args:
             circuit: The circuit to simulate.
+            repetitions: The number of times to sample from the circuit
+                (number of measurements to return).
         """
         qubits = circuit.all_qubits()
         qubit_index = {q: i for i, q in enumerate(sorted(qubits))}
         bitstring = "0" * len(qubits)
-        bitstrings = [bitstring]
-
+        bitstrings = [bitstring for _ in range(repetitions)]
         state = (
             self._initial_state.copy()
         )  # TODO: Update or require states to have copy method.
         keys_to_indices: Dict[str, List[int]] = {}
+
         for i, op in enumerate(circuit.all_operations()):
             if cirq.protocols.is_measurement(op):
                 if circuit.next_moment_operating_on(op.qubits, i + 1) is None:
@@ -146,45 +148,56 @@ class Simulator(cirq.SimulatesSamples):
 
             # Determine the candidate bitstrings to sample.
             op_support = {qubit_index[q] for q in op.qubits}
-            candidates = list(
-                itertools.product(
-                    *[
-                        ["0", "1"] if i in op_support else [b]
-                        for i, b in enumerate(bitstring)
+            candidates_list = []
+            joined_cands_list = []
+            candidate_probs_list = []
+            for bitstr in bitstrings:
+                candidates = list(
+                    itertools.product(
+                        *[
+                            ["0", "1"] if i in op_support else [b]
+                            for i, b in enumerate(bitstr)
+                        ]
+                    )
+                )
+                candidates_list.append(candidates)
+                joined_cands = ["".join(cand) for cand in candidates]
+                joined_cands_list.append(joined_cands)
+                # Compute probability of each candidate bitstring.
+                candidate_probs = np.asarray(
+                    [
+                        self._compute_probability(state, candidate)
+                        for candidate in joined_cands
                     ]
                 )
-            )
-            joined_cands = ["".join(cand) for cand in candidates]
-
-            # Compute probability of each candidate bitstring.
-            candidate_probs = np.asarray(
-                [
-                    self._compute_probability(state, candidate)
-                    for candidate in joined_cands
-                ]
-            )
+                candidate_probs_list.append(candidate_probs)
 
             # Sample to get bitstring.
-            bitstring = "".join(
-                candidates[
-                    self._rng.choice(
-                        range(len(candidates)),
-                        p=candidate_probs / sum(candidate_probs),
-                    )
-                ]
-            )
-            bitstrings.append(bitstring)
-
-        # Return dict of list of bitstrings measured per gate.
-        keys_to_bitstrings: Dict[str, List[str]] = {}
-        for meas in keys_to_indices:
-            keys_to_bitstrings[meas] = [
-                "".join(
-                    [
-                        bit
-                        for i, bit in enumerate(bitstring)
-                        if i in keys_to_indices[meas]
+            for rep in range(repetitions):
+                bitstrings[rep] = "".join(
+                    candidates_list[rep][
+                        self._rng.choice(
+                            a=range(len(candidates_list[rep])),
+                            replace=True,
+                            p=candidate_probs_list[rep]
+                            / sum(candidate_probs_list[rep]),
+                        )
                     ]
                 )
-            ]
+
+        # Return dict of list of bitstrings measured per gate.
+        keys_to_bitstrings: List[Dict[str, List[str]]] = [
+            {} for _ in range(repetitions)
+        ]
+        for rep in range(repetitions):
+            for meas in keys_to_indices:
+                keys_to_bitstrings[rep][meas] = [
+                    "".join(
+                        [
+                            bit
+                            for i, bit in enumerate(bitstrings[rep])
+                            if i in keys_to_indices[meas]
+                        ]
+                    )
+                ]
         return keys_to_bitstrings
