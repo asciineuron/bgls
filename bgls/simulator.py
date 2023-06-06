@@ -99,9 +99,18 @@ class Simulator(cirq.SimulatesSamples):
                 (number of measurements to return).
         """
         records: Dict[str, np.ndarray] = {}
-        for rep, keys_to_bitstrings in enumerate(
-            self._sample_bitstrings(circuit, repetitions)
-        ):
+        keys_to_bitstrings_list = []
+        if self._can_efficiently_sample(circuit):
+            keys_to_bitstrings_list = self._sample_bitstrings(
+                circuit, repetitions
+            )
+        else:
+            for _ in range(repetitions):
+                keys_to_bitstrings_list.append(
+                    self._sample_bitstrings(circuit, 1)[0]
+                )
+
+        for rep, keys_to_bitstrings in enumerate(keys_to_bitstrings_list):
             for meas_key in keys_to_bitstrings:
                 if rep == 0 and meas_key not in records:
                     records[meas_key] = np.zeros(
@@ -201,3 +210,14 @@ class Simulator(cirq.SimulatesSamples):
                     )
                 ]
         return keys_to_bitstrings
+
+    def _can_efficiently_sample(self, circuit: "cirq.AbstractCircuit") -> bool:
+        """Determines if repeated samples can be drawn for a single
+        simulation. For near-clifford or noisy circuits this is not
+        possible."""
+        if self._apply_gate == cirq.act_on:
+            for op in circuit.all_operations():
+                if not cirq.has_unitary(op) and not cirq.is_measurement(op):
+                    return False
+            return True
+        return False

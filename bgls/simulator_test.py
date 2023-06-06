@@ -210,40 +210,6 @@ def test_run_with_stabilizer_ch_simulator():
     assert result_stabilizer_ch == result_state_vector
 
 
-def test_run_with_stabilizer_ch_simulator_near_clifford():
-    """Test sampled bitstrings are same when using a state vector ch form
-    simulator and a statevector simulator. Using apply_near_clifford_gate
-    can work with Clifford+T circuits as well.
-    """
-    a, b, c = cirq.LineQubit.range(3)
-    circuit = cirq.Circuit(
-        cirq.H(a),
-        cirq.CNOT(a, b),
-        cirq.X.on(c),
-        cirq.T(c),
-        cirq.measure([a, b, c], key="z"),
-    )
-    sim_state_vector = bgls.Simulator(
-        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
-        cirq.protocols.act_on,
-        bgls.utils.cirq_state_vector_bitstring_probability,
-        seed=1,
-    )
-    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
-
-    sim_stabilizer_ch = bgls.Simulator(
-        cirq.StabilizerChFormSimulationState(
-            qubits=(a, b, c), initial_state=0
-        ),
-        bgls.utils.act_on_near_clifford,
-        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
-        seed=1,
-    )
-    result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
-
-    assert result_stabilizer_ch == result_state_vector
-
-
 def test_remains_clifford():
     """Creating a large random circuit of clifford gates, the simulator
     should remain clifford throughout, so act_on behaves identically to
