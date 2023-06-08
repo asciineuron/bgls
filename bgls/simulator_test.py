@@ -17,7 +17,6 @@ import pytest
 import numpy as np
 
 import cirq
-import cirq.contrib.quimb.mps_simulator
 
 import bgls
 
@@ -289,6 +288,7 @@ def test_mps_results_match_state_vec():
     """
     try:
         import quimb.tensor as qtn
+        import cirq.contrib.quimb.mps_simulator
     except ImportError:
         return "quimb not installed, mps simulation not possible"
 
