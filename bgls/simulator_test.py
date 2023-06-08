@@ -287,6 +287,32 @@ def test_mps_results_match_state_vec():
     """Test sampled bitstrings are same when using a matrix product state
     simulator and a state vector simulator.
     """
+    try:
+        import quimb.tensor as qtn
+    except ImportError:
+        return "quimb not installed, mps simulation not possible"
+
+    def cirq_mps_bitstring_probability(
+        mps: cirq.contrib.quimb.MPSState, bitstring: str
+    ) -> float:
+        """
+        Returns the probability of measuring the `bitstring` (|z⟩) in the
+        'cirq.contrib.quimb.MPSState' mps.
+        Args:
+            mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
+            bitstring: Bitstring |z⟩ as a binary string.
+        """
+        M_subset = []
+        for i, Ai in enumerate(mps.M):
+            qubit_index = mps.i_str(i)
+            # selecting the component with matching bitstring:
+            A_subset = Ai.isel({qubit_index: int(bitstring[i])})
+            M_subset.append(A_subset)
+
+        tensor_network = qtn.TensorNetwork(M_subset)
+        state_vector = tensor_network.contract(inplace=False)
+        return np.power(np.abs(state_vector), 2)
+
     qs = cirq.LineQubit.range(4)
     circuit = cirq.testing.random_circuit(qs, n_moments=20, op_density=0.5)
     circuit = circuit + cirq.measure(qs, key="z")
@@ -305,7 +331,7 @@ def test_mps_results_match_state_vec():
     sim_mps = bgls.Simulator(
         mps_state,
         cirq.protocols.act_on,
-        bgls.utils.cirq_mps_bitstring_probability,
+        cirq_mps_bitstring_probability,
         seed=1,
     )
     result_mps = sim_mps.run(circuit, repetitions=100)
