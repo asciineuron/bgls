@@ -59,7 +59,9 @@ def circuit_clifford_decomposition(
                 # determine amplitudes based on gate exponent:
                 theta = np.pi * op.gate.exponent
                 # normalizing s.t. Rz gates have 0 relative phase
-                phase = np.exp((0 + 1j) * theta * (0.5 - op.gate.global_shift))
+                phase = np.exp(
+                    (0 + 1j) * theta * (0.5 - op.gate.global_shift)
+                )
                 amplitude *= phase
 
                 if ith_bit(pos, i):

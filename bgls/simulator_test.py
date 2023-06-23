@@ -261,7 +261,7 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
         gate_domain={cirq.S, cirq.CNOT, cirq.H, cirq.T},
         random_state=1,
     )
-    circuit.append(cirq.measure(qs, key="meas"))
+    circuit.append(cirq.measure(qs))
 
     sim_state_vector = bgls.Simulator(
         cirq.StateVectorSimulationState(qubits=qs, initial_state=0),

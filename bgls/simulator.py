@@ -100,14 +100,14 @@ class Simulator(cirq.SimulatesSamples):
         """
         records: Dict[str, np.ndarray] = {}
         keys_to_bitstrings_list = []
-        if self._needs_trajectories(circuit):
-            keys_to_bitstrings_list = self._sample_bitstrings(
+        if needs_trajectories(self._apply_gate, circuit):
+            keys_to_bitstrings_list = self._perform_bgls_sampling(
                 circuit, repetitions
             )
         else:
             for _ in range(repetitions):
                 keys_to_bitstrings_list.append(
-                    self._sample_bitstrings(circuit, 1)[0]
+                    self._perform_bgls_sampling(circuit, 1)[0]
                 )
 
         for rep, keys_to_bitstrings in enumerate(keys_to_bitstrings_list):
@@ -125,15 +125,20 @@ class Simulator(cirq.SimulatesSamples):
                 ]
         return records
 
-    def _sample_bitstrings(
+    def _perform_bgls_sampling(
         self, circuit: "cirq.AbstractCircuit", repetitions: int = 1
     ) -> List[Dict[str, List[str]]]:
-        """Returns measurements by simulating the circuit.
+        """Performs the actual bgls sampling algorithm. Updates all
+        repetitions of bitstrings in one pass through the circuit.
 
         Args:
             circuit: The circuit to simulate.
-            repetitions: The number of times to sample from the circuit
-                (number of measurements to return).
+            repetitions: The number of bitstrings to sample from the circuit.
+
+        Returns:
+            A list of dictionaries for each bitstring sampled, mapping from
+            measurement gate key to the corresponding bitstring subset. Pass
+            to _sample to properly format for matching cirq.
         """
         qubits = circuit.all_qubits()
         qubit_index = {q: i for i, q in enumerate(sorted(qubits))}
@@ -211,22 +216,27 @@ class Simulator(cirq.SimulatesSamples):
                 ]
         return keys_to_bitstrings
 
-    def _needs_trajectories(self, circuit: "cirq.AbstractCircuit") -> bool:
-        """Determines if repeated samples can be drawn for a single
-        simulation. For near-clifford, noisy, or non-unitary circuits this
-        is not possible. See qsim/qsimcirq/qsim_simulator.py"""
 
-        if self._apply_gate != cirq.act_on:
-            return False
-
-        for op in circuit.all_operations():
-            test_op = (
-                op
-                if not cirq.is_parameterized(op)
-                else cirq.resolve_parameters(
-                    op, {param: 1 for param in cirq.parameter_names(op)}
-                )
-            )
-            if not (cirq.is_measurement(test_op) or cirq.has_unitary(test_op)):
-                return True
+def needs_trajectories(
+    apply_gate: Callable[[cirq.Operation, State], None],
+    circuit: "cirq.AbstractCircuit",
+) -> bool:
+    """Determines if repeated samples can be drawn for a single
+    simulation. For near-clifford, noisy, or non-unitary circuits this
+    is not possible. Taken from
+    https://github.com/quantumlib/qsim/blob
+    /235ae2fc039fb4a98beb4a6114d10c7f8d2070f7/qsimcirq/qsim_simulator.py
+    #L29"""
+    if apply_gate != cirq.act_on:
         return False
+    for op in circuit.all_operations():
+        test_op = (
+            op
+            if not cirq.is_parameterized(op)
+            else cirq.resolve_parameters(
+                op, {param: 1 for param in cirq.parameter_names(op)}
+            )
+        )
+        if not (cirq.is_measurement(test_op) or cirq.has_unitary(test_op)):
+            return True
+    return False
