@@ -14,6 +14,8 @@
 
 import pytest
 
+import numpy as np
+
 import cirq
 
 import bgls
@@ -210,40 +212,6 @@ def test_run_with_stabilizer_ch_simulator():
     assert result_stabilizer_ch == result_state_vector
 
 
-def test_run_with_stabilizer_ch_simulator_near_clifford():
-    """Test sampled bitstrings are same when using a state vector ch form
-    simulator and a statevector simulator. Using apply_near_clifford_gate
-    can work with Clifford+T circuits as well.
-    """
-    a, b, c = cirq.LineQubit.range(3)
-    circuit = cirq.Circuit(
-        cirq.H(a),
-        cirq.CNOT(a, b),
-        cirq.X.on(c),
-        cirq.T(c),
-        cirq.measure([a, b, c], key="z"),
-    )
-    sim_state_vector = bgls.Simulator(
-        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
-        cirq.protocols.act_on,
-        bgls.utils.cirq_state_vector_bitstring_probability,
-        seed=1,
-    )
-    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
-
-    sim_stabilizer_ch = bgls.Simulator(
-        cirq.StabilizerChFormSimulationState(
-            qubits=(a, b, c), initial_state=0
-        ),
-        bgls.utils.act_on_near_clifford,
-        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
-        seed=1,
-    )
-    result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
-
-    assert result_stabilizer_ch == result_state_vector
-
-
 def test_remains_clifford():
     """Creating a large random circuit of clifford gates, the simulator
     should remain clifford throughout, so act_on behaves identically to
@@ -278,3 +246,53 @@ def test_remains_clifford():
     sim_results_stab = sim_act_on_stab.run(clifford_circuit, repetitions=100)
 
     assert sim_results == sim_results_stab
+
+
+def test_run_with_stabilizer_ch_simulator_near_clifford():
+    """Test sampled bitstrings are same when using a state vector ch form
+    simulator and a statevector simulator. Using apply_near_clifford_gate
+    can work with Clifford+T circuits as well.
+    """
+    qs = cirq.LineQubit.range(3)
+    circuit = bgls.utils.generate_random_circuit(
+        qs,
+        n_moments=10,
+        op_density=0.5,
+        gate_domain={cirq.S, cirq.CNOT, cirq.H, cirq.T},
+        random_state=1,
+    )
+    circuit.append(cirq.measure(qs))
+
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=qs, initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(qubits=qs, initial_state=0),
+        bgls.utils.act_on_near_clifford,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+
+    observables = [cirq.Z(i) for i in qs]
+
+    state_vec_observables = sim_state_vector.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=10000,
+        permit_terminal_measurements=True,
+    )
+
+    stabilizer_ch_observables = sim_stabilizer_ch.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=10000,
+        permit_terminal_measurements=True,
+    )
+
+    assert np.allclose(
+        state_vec_observables, stabilizer_ch_observables, atol=1e-2
+    )
