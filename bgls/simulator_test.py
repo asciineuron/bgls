@@ -310,8 +310,8 @@ def test_mps_results_match_state_vec():
             M_subset.append(A_subset)
 
         tensor_network = qtn.TensorNetwork(M_subset)
-        state_vector = tensor_network.contract(inplace=False)
-        return np.power(np.abs(state_vector), 2)
+        bitstring_amplitude = tensor_network.contract(inplace=False)
+        return np.power(np.abs(bitstring_amplitude), 2)
 
     qs = cirq.LineQubit.range(4)
     circuit = cirq.testing.random_circuit(qs, n_moments=20, op_density=0.5)

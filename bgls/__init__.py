@@ -21,5 +21,4 @@ from bgls.utils import (
     cirq_density_matrix_bitstring_probability,
     cirq_stabilizer_ch_bitstring_probability,
     act_on_near_clifford,
-    generate_random_circuit,
 )
