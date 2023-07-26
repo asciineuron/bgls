@@ -9,4 +9,4 @@ myst-nb
 quimb
 opt_einsum
 autoray
-furo==2021.11.16
+furo
