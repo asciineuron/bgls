@@ -1,12 +1,15 @@
+# Testing.
 pytest-xdist[psutil]
 pytest-cov
 nbmake
+
+# Formatting.
 flake8
 black
 mypy
+
+# Documentation.
 sphinx
 myst-nb
-quimb
-opt_einsum
-autoray
 furo
+quimb[tensor]
