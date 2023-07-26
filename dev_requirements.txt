@@ -1,5 +1,6 @@
 pytest-xdist[psutil]
 pytest-cov
+nbmake
 flake8
 black
 mypy
