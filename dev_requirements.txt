@@ -5,3 +5,6 @@ black
 mypy
 sphinx
 myst-nb
+quimb
+furo==2021.11.16
+myst_nb~=0.17.2

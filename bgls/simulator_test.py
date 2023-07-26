@@ -18,7 +18,32 @@ import numpy as np
 
 import cirq
 
+import quimb.tensor as qtn
+import cirq.contrib.quimb.mps_simulator
+
 import bgls
+
+
+def cirq_mps_bitstring_probability(
+    mps: cirq.contrib.quimb.MPSState, bitstring: str
+) -> float:
+    """
+    Returns the probability of measuring the `bitstring` (|z⟩) in the
+    'cirq.contrib.quimb.MPSState' mps.
+    Args:
+        mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
+        bitstring: Bitstring |z⟩ as a binary string.
+    """
+    M_subset = []
+    for i, Ai in enumerate(mps.M):
+        qubit_index = mps.i_str(i)
+        # selecting the component with matching bitstring:
+        A_subset = Ai.isel({qubit_index: int(bitstring[i])})
+        M_subset.append(A_subset)
+
+    tensor_network = qtn.TensorNetwork(M_subset)
+    bitstring_amplitude = tensor_network.contract(inplace=False)
+    return np.power(np.abs(bitstring_amplitude), 2)
 
 
 @pytest.mark.parametrize("nqubits", range(3, 8 + 1))
@@ -286,32 +311,6 @@ def test_mps_results_match_state_vec():
     """Test sampled bitstrings are same when using a matrix product state
     simulator and a state vector simulator.
     """
-    try:
-        import quimb.tensor as qtn
-        import cirq.contrib.quimb.mps_simulator
-    except ImportError:
-        return "quimb not installed, mps simulation not possible"
-
-    def cirq_mps_bitstring_probability(
-        mps: cirq.contrib.quimb.MPSState, bitstring: str
-    ) -> float:
-        """
-        Returns the probability of measuring the `bitstring` (|z⟩) in the
-        'cirq.contrib.quimb.MPSState' mps.
-        Args:
-            mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
-            bitstring: Bitstring |z⟩ as a binary string.
-        """
-        M_subset = []
-        for i, Ai in enumerate(mps.M):
-            qubit_index = mps.i_str(i)
-            # selecting the component with matching bitstring:
-            A_subset = Ai.isel({qubit_index: int(bitstring[i])})
-            M_subset.append(A_subset)
-
-        tensor_network = qtn.TensorNetwork(M_subset)
-        bitstring_amplitude = tensor_network.contract(inplace=False)
-        return np.power(np.abs(bitstring_amplitude), 2)
 
     qs = cirq.LineQubit.range(4)
     circuit = cirq.testing.random_circuit(qs, n_moments=20, op_density=0.5)
