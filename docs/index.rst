@@ -7,6 +7,7 @@ Welcome to bgls's documentation!
 
    start.ipynb
    clifford_simulation.ipynb
+   mps_simulation.ipynb
 
 
 Indices and tables
