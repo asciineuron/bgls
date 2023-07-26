@@ -18,7 +18,32 @@ import numpy as np
 
 import cirq
 
+import quimb.tensor as qtn
+import cirq.contrib.quimb.mps_simulator
+
 import bgls
+
+
+def cirq_mps_bitstring_probability(
+    mps: cirq.contrib.quimb.MPSState, bitstring: str
+) -> float:
+    """
+    Returns the probability of measuring the `bitstring` (|z⟩) in the
+    'cirq.contrib.quimb.MPSState' mps.
+    Args:
+        mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
+        bitstring: Bitstring |z⟩ as a binary string.
+    """
+    M_subset = []
+    for i, Ai in enumerate(mps.M):
+        qubit_index = mps.i_str(i)
+        # selecting the component with matching bitstring:
+        A_subset = Ai.isel({qubit_index: int(bitstring[i])})
+        M_subset.append(A_subset)
+
+    tensor_network = qtn.TensorNetwork(M_subset)
+    bitstring_amplitude = tensor_network.contract(inplace=False)
+    return np.power(np.abs(bitstring_amplitude), 2)
 
 
 @pytest.mark.parametrize("nqubits", range(3, 8 + 1))
@@ -296,3 +321,34 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
     assert np.allclose(
         state_vec_observables, stabilizer_ch_observables, atol=1e-2
     )
+
+
+def test_mps_results_match_state_vec():
+    """Test sampled bitstrings are same when using a matrix product state
+    simulator and a state vector simulator.
+    """
+
+    qs = cirq.LineQubit.range(4)
+    circuit = cirq.testing.random_circuit(qs, n_moments=20, op_density=0.5)
+    circuit = circuit + cirq.measure(qs, key="z")
+
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=qs, initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
+
+    mps_state = cirq.contrib.quimb.MPSState(
+        qubits=qs, initial_state=0, prng=np.random.RandomState()
+    )
+    sim_mps = bgls.Simulator(
+        mps_state,
+        cirq.protocols.act_on,
+        cirq_mps_bitstring_probability,
+        seed=1,
+    )
+    result_mps = sim_mps.run(circuit, repetitions=100)
+
+    assert result_mps == result_state_vector
