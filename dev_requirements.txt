@@ -6,5 +6,7 @@ mypy
 sphinx
 myst-nb
 quimb
+opt_einsum
+autoray
 furo==2021.11.16
 myst_nb~=0.17.2
