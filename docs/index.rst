@@ -8,6 +8,7 @@ Welcome to bgls's documentation!
    start.ipynb
    clifford_simulation.ipynb
    mps_simulation.ipynb
+   qaoa_example.ipynb
 
 
 Indices and tables
