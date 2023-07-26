@@ -19,19 +19,21 @@ import numpy as np
 
 import cirq
 
+import bgls.utils
+
 # for now restrict to generic simulationstatebase which is subclassed
 State = TypeVar("State", bound=cirq.SimulationStateBase)
 
 
 class Simulator(cirq.SimulatesSamples):
     def __init__(
-        self,
-        initial_state: State,
-        apply_gate: Callable[
-            [cirq.Operation, State], None
-        ],  # TODO: Decide on return value.
-        compute_probability: Callable[[State, str], float],
-        seed: cirq.RANDOM_STATE_OR_SEED_LIKE = None,
+            self,
+            initial_state: State,
+            apply_gate: Callable[
+                [cirq.Operation, State], None
+            ],  # TODO: Decide on return value.
+            compute_probability: Callable[[State, str], float],
+            seed: cirq.RANDOM_STATE_OR_SEED_LIKE = None,
     ) -> None:
         """Initialize a BGLS Simulator.
 
@@ -58,10 +60,10 @@ class Simulator(cirq.SimulatesSamples):
         self._rng = cirq.value.parse_random_state(seed)
 
     def _run(
-        self,
-        circuit: "cirq.AbstractCircuit",
-        param_resolver: "cirq.ParamResolver",
-        repetitions: int,
+            self,
+            circuit: "cirq.AbstractCircuit",
+            param_resolver: "cirq.ParamResolver",
+            repetitions: int,
     ) -> Dict[str, np.ndarray]:
         """Run a simulation, mimicking quantum hardware.
 
@@ -84,12 +86,14 @@ class Simulator(cirq.SimulatesSamples):
         param_resolver = param_resolver or cirq.ParamResolver()
         resolved_circuit = cirq.resolve_parameters(circuit, param_resolver)
 
-        return self._sample(resolved_circuit, repetitions)
+        opt_circuit = bgls.utils.bgls_optimized_circuit(resolved_circuit)
+
+        return self._sample(opt_circuit, repetitions)
 
     def _sample(
-        self,
-        circuit: "cirq.AbstractCircuit",
-        repetitions: int = 1,
+            self,
+            circuit: "cirq.AbstractCircuit",
+            repetitions: int = 1,
     ) -> Dict[str, np.ndarray]:
         """Returns a number of measurements by simulating the circuit.
 
@@ -126,7 +130,7 @@ class Simulator(cirq.SimulatesSamples):
         return records
 
     def _perform_bgls_sampling(
-        self, circuit: "cirq.AbstractCircuit", repetitions: int = 1
+            self, circuit: "cirq.AbstractCircuit", repetitions: int = 1
     ) -> List[Dict[str, List[str]]]:
         """Performs the actual bgls sampling algorithm. Updates all
         repetitions of bitstrings in one pass through the circuit.
@@ -194,7 +198,7 @@ class Simulator(cirq.SimulatesSamples):
                             a=range(len(candidates_list[rep])),
                             replace=True,
                             p=candidate_probs_list[rep]
-                            / sum(candidate_probs_list[rep]),
+                              / sum(candidate_probs_list[rep]),
                         )
                     ]
                 )
@@ -218,8 +222,8 @@ class Simulator(cirq.SimulatesSamples):
 
 
 def needs_trajectories(
-    apply_gate: Callable[[cirq.Operation, State], None],
-    circuit: "cirq.AbstractCircuit",
+        apply_gate: Callable[[cirq.Operation, State], None],
+        circuit: "cirq.AbstractCircuit",
 ) -> bool:
     """Determines if repeated samples can be drawn for a single
     simulation. For near-clifford, noisy, or non-unitary circuits this

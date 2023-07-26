@@ -22,8 +22,9 @@ import bgls
 
 
 def cirq_state_vector_bitstring_probability(
-    state_vector_state: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
-    bitstring: str,
+        state_vector_state:
+        cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
+        bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.StateVectorSimulationState` (|ψ⟩), i.e. |⟨z|ψ⟩|^2.
@@ -34,18 +35,18 @@ def cirq_state_vector_bitstring_probability(
         bitstring: Bitstring |z⟩ as a binary string.
     """
     return (
-        np.abs(
-            cirq.to_valid_state_vector(state_vector_state.target_tensor)[
-                int(bitstring, 2)
-            ]
-        )
-        ** 2
+            np.abs(
+                cirq.to_valid_state_vector(state_vector_state.target_tensor)[
+                    int(bitstring, 2)
+                ]
+            )
+            ** 2
     )
 
 
 def cirq_density_matrix_bitstring_probability(
-    density_matrix_state: cirq.sim.DensityMatrixSimulationState,
-    bitstring: str,
+        density_matrix_state: cirq.sim.DensityMatrixSimulationState,
+        bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.DensityMatrixSimulationState` (ρ), i.e. ⟨z|ρ|z⟩.
@@ -64,8 +65,8 @@ def cirq_density_matrix_bitstring_probability(
 
 
 def cirq_stabilizer_ch_bitstring_probability(
-    stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
-    bitstring: str,
+        stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
+        bitstring: str,
 ) -> float:
     """Returns the probability of measuring the `bitstring` (|z⟩) in the
     `cirq.StabilizerChFormSimulationState` (U_C U_H|s⟩), i.e. |⟨z|ψ⟩|^2.
@@ -79,19 +80,19 @@ def cirq_stabilizer_ch_bitstring_probability(
     # the state is of type StabilizerStateChForm
     # this runs in O(n^2) for an n qubit state
     return (
-        np.abs(
-            stabilizer_ch_form_state.state.inner_product_of_state_and_x(
-                int(bitstring, 2)
+            np.abs(
+                stabilizer_ch_form_state.state.inner_product_of_state_and_x(
+                    int(bitstring, 2)
+                )
             )
-        )
-        ** 2
+            ** 2
     )
 
 
 def act_on_near_clifford(
-    op: cirq.Operation,
-    state: bgls.simulator.State,
-    rng: np.random.RandomState = np.random.RandomState(),
+        op: cirq.Operation,
+        state: bgls.simulator.State,
+        rng: np.random.RandomState = np.random.RandomState(),
 ) -> None:
     """
     Applies a Clifford+T (or more generically, Rz(theta)) gate to a state.
@@ -130,12 +131,28 @@ def act_on_near_clifford(
         )
 
 
+@cirq.transformer
+def bgls_optimized_circuit(
+        circuit: cirq.AbstractCircuit) -> cirq.AbstractCircuit:
+    # new_circuit = cirq.Circuit()
+    # for i, op in enumerate(circuit.all_operations()):
+    #     op_qubits = op.qubits
+    #     next_moment = circuit.next_moment_operating_on(op.qubits, i + 1)
+    #     next_op = circuit.operation_at(op_qubits[0], next_moment)
+    #     next_op_qubits = next_op.qubits
+    #
+    #     if op_qubits == next_op_qubits:
+    #         cirq.MatrixGate(op.)
+
+    return circuit
+
+
 def generate_random_circuit(
-    qubits: Union[Sequence[cirq.ops.Qid], int],
-    n_moments: int,
-    op_density: float,
-    gate_domain: Optional[Set[cirq.Gate]] = None,
-    random_state: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
+        qubits: Union[Sequence[cirq.ops.Qid], int],
+        n_moments: int,
+        op_density: float,
+        gate_domain: Optional[Set[cirq.Gate]] = None,
+        random_state: "cirq.RANDOM_STATE_OR_SEED_LIKE" = None,
 ) -> cirq.circuits.Circuit:
     """Generates a random circuit.
 
