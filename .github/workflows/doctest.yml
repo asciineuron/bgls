@@ -22,6 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         python -m pip install -r dev_requirements.txt
+        python -m pip install .
     - name: Test with pytest
       run: |
         pytest --nbmake docs/*.ipynb -n=auto
