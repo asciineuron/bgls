@@ -1,5 +1,5 @@
-Welcome to bgls's documentation!
-================================
+Documentation for `BGLS`
+========================
 
 .. toctree::
    :maxdepth: 2
