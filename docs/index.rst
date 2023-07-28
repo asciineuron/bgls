@@ -1,14 +1,19 @@
-Welcome to bgls's documentation!
-================================
+Documentation for `BGLS`
+========================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Jupyter notebook examples:
+   :caption: Guide
 
    start.ipynb
+   how_it_works.ipynb
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples
+
    clifford_simulation.ipynb
    mps_simulation.ipynb
-
 
 Indices and tables
 ==================
