@@ -1,1 +1,1 @@
-cirq-core~=1.0.0
+cirq-core>=1.1.0

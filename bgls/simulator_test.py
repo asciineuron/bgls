@@ -14,9 +14,36 @@
 
 import pytest
 
+import numpy as np
+
 import cirq
 
+import quimb.tensor as qtn
+import cirq.contrib.quimb.mps_simulator
+
 import bgls
+
+
+def cirq_mps_bitstring_probability(
+    mps: cirq.contrib.quimb.MPSState, bitstring: str
+) -> float:
+    """
+    Returns the probability of measuring the `bitstring` (|z⟩) in the
+    'cirq.contrib.quimb.MPSState' mps.
+    Args:
+        mps: Matrix Product State as a 'cirq.contrib.quimb.MPSState'.
+        bitstring: Bitstring |z⟩ as a binary string.
+    """
+    M_subset = []
+    for i, Ai in enumerate(mps.M):
+        qubit_index = mps.i_str(i)
+        # selecting the component with matching bitstring:
+        A_subset = Ai.isel({qubit_index: int(bitstring[i])})
+        M_subset.append(A_subset)
+
+    tensor_network = qtn.TensorNetwork(M_subset)
+    bitstring_amplitude = tensor_network.contract(inplace=False)
+    return np.power(np.abs(bitstring_amplitude), 2)
 
 
 @pytest.mark.parametrize("nqubits", range(3, 8 + 1))
@@ -210,40 +237,6 @@ def test_run_with_stabilizer_ch_simulator():
     assert result_stabilizer_ch == result_state_vector
 
 
-def test_run_with_stabilizer_ch_simulator_near_clifford():
-    """Test sampled bitstrings are same when using a state vector ch form
-    simulator and a statevector simulator. Using apply_near_clifford_gate
-    can work with Clifford+T circuits as well.
-    """
-    a, b, c = cirq.LineQubit.range(3)
-    circuit = cirq.Circuit(
-        cirq.H(a),
-        cirq.CNOT(a, b),
-        cirq.X.on(c),
-        cirq.T(c),
-        cirq.measure([a, b, c], key="z"),
-    )
-    sim_state_vector = bgls.Simulator(
-        cirq.StateVectorSimulationState(qubits=(a, b, c), initial_state=0),
-        cirq.protocols.act_on,
-        bgls.utils.cirq_state_vector_bitstring_probability,
-        seed=1,
-    )
-    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
-
-    sim_stabilizer_ch = bgls.Simulator(
-        cirq.StabilizerChFormSimulationState(
-            qubits=(a, b, c), initial_state=0
-        ),
-        bgls.utils.act_on_near_clifford,
-        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
-        seed=1,
-    )
-    result_stabilizer_ch = sim_stabilizer_ch.run(circuit, repetitions=100)
-
-    assert result_stabilizer_ch == result_state_vector
-
-
 def test_remains_clifford():
     """Creating a large random circuit of clifford gates, the simulator
     should remain clifford throughout, so act_on behaves identically to
@@ -278,3 +271,84 @@ def test_remains_clifford():
     sim_results_stab = sim_act_on_stab.run(clifford_circuit, repetitions=100)
 
     assert sim_results == sim_results_stab
+
+
+def test_run_with_stabilizer_ch_simulator_near_clifford():
+    """Test sampled bitstrings are same when using a state vector ch form
+    simulator and a statevector simulator. Using apply_near_clifford_gate
+    can work with Clifford+T circuits as well.
+    """
+    qs = cirq.LineQubit.range(3)
+    circuit = bgls.utils.generate_random_circuit(
+        qs,
+        n_moments=10,
+        op_density=0.5,
+        gate_domain={cirq.S, cirq.CNOT, cirq.H, cirq.T},
+        random_state=1,
+    )
+    circuit.append(cirq.measure(qs))
+
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=qs, initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+
+    sim_stabilizer_ch = bgls.Simulator(
+        cirq.StabilizerChFormSimulationState(qubits=qs, initial_state=0),
+        bgls.utils.act_on_near_clifford,
+        bgls.utils.cirq_stabilizer_ch_bitstring_probability,
+        seed=1,
+    )
+
+    observables = [cirq.Z(i) for i in qs]
+
+    state_vec_observables = sim_state_vector.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=10000,
+        permit_terminal_measurements=True,
+    )
+
+    stabilizer_ch_observables = sim_stabilizer_ch.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=10000,
+        permit_terminal_measurements=True,
+    )
+
+    assert np.allclose(
+        state_vec_observables, stabilizer_ch_observables, atol=1e-2
+    )
+
+
+def test_mps_results_match_state_vec():
+    """Test sampled bitstrings are same when using a matrix product state
+    simulator and a state vector simulator.
+    """
+
+    qs = cirq.LineQubit.range(4)
+    circuit = cirq.testing.random_circuit(qs, n_moments=20, op_density=0.5)
+    circuit = circuit + cirq.measure(qs, key="z")
+
+    sim_state_vector = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=qs, initial_state=0),
+        cirq.protocols.act_on,
+        bgls.utils.cirq_state_vector_bitstring_probability,
+        seed=1,
+    )
+    result_state_vector = sim_state_vector.run(circuit, repetitions=100)
+
+    mps_state = cirq.contrib.quimb.MPSState(
+        qubits=qs, initial_state=0, prng=np.random.RandomState()
+    )
+    sim_mps = bgls.Simulator(
+        mps_state,
+        cirq.protocols.act_on,
+        cirq_mps_bitstring_probability,
+        seed=1,
+    )
+    result_mps = sim_mps.run(circuit, repetitions=100)
+
+    assert result_mps == result_state_vector

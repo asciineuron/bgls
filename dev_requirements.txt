@@ -1,5 +1,15 @@
+# Testing.
 pytest-xdist[psutil]
 pytest-cov
+nbmake
+
+# Formatting.
 flake8
 black
 mypy
+
+# Documentation.
+sphinx
+myst-nb
+furo
+quimb[tensor]

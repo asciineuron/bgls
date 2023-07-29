@@ -33,11 +33,12 @@ def cirq_state_vector_bitstring_probability(
             `cirq.StateVectorSimulationState`.
         bitstring: Bitstring |z⟩ as a binary string.
     """
+    num_qubits = len(state_vector_state.qubits)
     return (
         np.abs(
-            cirq.to_valid_state_vector(state_vector_state.target_tensor)[
-                int(bitstring, 2)
-            ]
+            cirq.to_valid_state_vector(
+                state_vector_state.target_tensor, num_qubits=num_qubits
+            )[int(bitstring, 2)]
         )
         ** 2
     )
