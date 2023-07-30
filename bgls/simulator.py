@@ -168,7 +168,9 @@ class Simulator(cirq.SimulatesSamples):
             # Memoize self._compute_probability.
             computed_probabilities: Dict[str, float] = {}
 
-            def compute_probability(wavefunction: State, bstring: str) -> float:
+            def compute_probability(
+                wavefunction: State, bstring: str
+            ) -> float:
                 if bstring in computed_probabilities.keys():
                     return computed_probabilities[bstring]
                 probability = self._compute_probability(wavefunction, bstring)
