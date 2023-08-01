@@ -159,6 +159,11 @@ class Simulator(cirq.SimulatesSamples):
                 continue
 
             self._apply_gate(op, state)
+    
+            # Skip updating bitstrings for diagonal gates since they do not change
+            # the probability distribution.
+            if cirq.is_diagonal(cirq.unitary(op.gate), atol=1e-8):
+                continue
 
             # Update bits on support of this operation.
             op_support = {qubit_index[q] for q in op.qubits}
