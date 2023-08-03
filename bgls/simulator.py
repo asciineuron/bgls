@@ -100,7 +100,7 @@ class Simulator(cirq.SimulatesSamples):
         """
         records: Dict[str, np.ndarray] = {}
         keys_to_bitstrings_list = []
-        if needs_trajectories(self._apply_gate, circuit):
+        if not needs_trajectories(self._apply_gate, circuit):
             keys_to_bitstrings_list = self._perform_bgls_sampling(
                 circuit, repetitions
             )
@@ -165,11 +165,24 @@ class Simulator(cirq.SimulatesSamples):
             if cirq.is_diagonal(cirq.unitary(op.gate), atol=1e-8):
                 continue
 
-            # Determine the candidate bitstrings to sample.
+            # Update bits on support of this operation.
             op_support = {qubit_index[q] for q in op.qubits}
             candidates_list = []
-            joined_cands_list = []
             candidate_probs_list = []
+
+            # Memoize self._compute_probability.
+            computed_probabilities: Dict[str, float] = {}
+
+            def compute_probability(
+                wavefunction: State, bstring: str
+            ) -> float:
+                if bstring in computed_probabilities.keys():
+                    return computed_probabilities[bstring]
+                probability = self._compute_probability(wavefunction, bstring)
+                computed_probabilities[bstring] = probability
+                return probability
+
+            # Compute probabilities for all bitstrings.
             for bitstr in bitstrings:
                 candidates = list(
                     itertools.product(
@@ -180,13 +193,12 @@ class Simulator(cirq.SimulatesSamples):
                     )
                 )
                 candidates_list.append(candidates)
-                joined_cands = ["".join(cand) for cand in candidates]
-                joined_cands_list.append(joined_cands)
+
                 # Compute probability of each candidate bitstring.
                 candidate_probs = np.asarray(
                     [
-                        self._compute_probability(state, candidate)
-                        for candidate in joined_cands
+                        compute_probability(state, "".join(candidate))
+                        for candidate in candidates
                     ]
                 )
                 candidate_probs_list.append(candidate_probs)
