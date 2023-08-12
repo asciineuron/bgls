@@ -352,3 +352,39 @@ def test_mps_results_match_state_vec():
     result_mps = sim_mps.run(circuit, repetitions=100)
 
     assert result_mps == result_state_vector
+
+
+def test_dense_moments_intermediate_measurement_counting():
+    """For a circuit with several operations per moment, counting operations
+    rather than moments can erroneously classify an intermediate measurement
+    as terminal"""
+    q = cirq.LineQubit.range(3)
+    circuit1 = cirq.Circuit(
+        (
+            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
+            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
+            cirq.Moment(cirq.measure([q[0]], key="q0")),
+            cirq.Moment(cirq.X.on(q[0])),
+            cirq.Moment(cirq.measure([q[1]], key="q1")),
+        )
+    )
+
+    circuit2 = cirq.Circuit(
+        (
+            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
+            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
+            cirq.Moment(cirq.X.on(q[0])),
+            cirq.Moment(cirq.measure([q[1]], key="q1")),
+        )
+    )
+    sim = bgls.Simulator(
+        initial_state=cirq.StateVectorSimulationState(
+            qubits=q, initial_state=0
+        ),
+        apply_gate=cirq.protocols.act_on,
+        compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
+    )
+
+    results1 = sim.run(circuit1, repetitions=100)
+    results2 = sim.run(circuit2, repetitions=100)
+    assert results1 == results2
