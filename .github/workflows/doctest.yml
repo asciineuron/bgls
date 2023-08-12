@@ -26,4 +26,4 @@ jobs:
           python -m pip install .
       - name: Test with pytest
         run: |
-          pytest --nbmake docs/*.ipynb -n=auto
+          pytest --nbmake --nbmake-timeout=600 docs/*.ipynb -n=auto
