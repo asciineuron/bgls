@@ -12,4 +12,4 @@ mypy
 sphinx
 myst-nb
 furo
-quimb[tensor]
+quimb
