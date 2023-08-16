@@ -196,10 +196,12 @@ class Simulator(cirq.SimulatesSamples):
                 )
 
                 # Compute probability of each candidate bitstring.
-                probabilities = np.array([
-                    compute_probability(state, "".join(candidate))
-                    for candidate in candidates
-                ])
+                probabilities = np.array(
+                    [
+                        compute_probability(state, "".join(candidate))
+                        for candidate in candidates
+                    ]
+                )
 
                 # Sample new bitstring(s).
                 new_bitstring_indices = self._rng.choice(
