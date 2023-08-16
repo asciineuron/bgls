@@ -13,6 +13,7 @@
 """Defines the BGLS Simulator."""
 
 import itertools
+import collections
 from typing import TypeVar, Callable, Dict, List
 
 import numpy as np
@@ -142,8 +143,9 @@ class Simulator(cirq.SimulatesSamples):
         """
         qubits = circuit.all_qubits()
         qubit_index = {q: i for i, q in enumerate(sorted(qubits))}
-        bitstring = "0" * len(qubits)
-        bitstrings = [bitstring for _ in range(repetitions)]
+
+        bitstrings = {"0" * len(qubits): repetitions}
+
         state = (
             self._initial_state.copy()
         )  # TODO: Update or require states to have copy method.
@@ -151,13 +153,16 @@ class Simulator(cirq.SimulatesSamples):
 
         for i, op in enumerate(circuit.all_operations()):
             if cirq.protocols.is_measurement(op):
+                # Store indices of terminal measurements.
                 if circuit.next_moment_operating_on(op.qubits, i + 1) is None:
                     meas_key = cirq.protocols.measurement_key_name(op.gate)
                     if meas_key not in keys_to_indices:
                         meas_indices = [qubit_index[q] for q in op.qubits]
                         keys_to_indices[meas_key] = meas_indices
+                # Skip updating state & resampling for intermediate measurements.
                 continue
 
+            # Update the state.
             self._apply_gate(op, state)
 
             # Skip updating bitstrings for diagonal gates since they do not change
@@ -166,55 +171,40 @@ class Simulator(cirq.SimulatesSamples):
                 continue
 
             # Update bits on support of this operation.
+            new_bitstrings = collections.defaultdict(int)
             op_support = {qubit_index[q] for q in op.qubits}
-            candidates_list = []
-            candidate_probs_list = []
-
-            # Memoize self._compute_probability.
-            computed_probabilities: Dict[str, float] = {}
-
-            def compute_probability(
-                wavefunction: State, bstring: str
-            ) -> float:
-                if bstring in computed_probabilities.keys():
-                    return computed_probabilities[bstring]
-                probability = self._compute_probability(wavefunction, bstring)
-                computed_probabilities[bstring] = probability
-                return probability
-
-            # Compute probabilities for all bitstrings.
-            for bitstr in bitstrings:
+            for bitstring, count in bitstrings.items():
                 candidates = list(
                     itertools.product(
                         *[
                             ["0", "1"] if i in op_support else [b]
-                            for i, b in enumerate(bitstr)
+                            for i, b in enumerate(bitstring)
                         ]
                     )
                 )
-                candidates_list.append(candidates)
 
                 # Compute probability of each candidate bitstring.
-                candidate_probs = np.asarray(
-                    [
-                        compute_probability(state, "".join(candidate))
-                        for candidate in candidates
-                    ]
-                )
-                candidate_probs_list.append(candidate_probs)
+                probabilities = [
+                    self._compute_probability(state, "".join(candidate))
+                    for candidate in candidates
+                ]
 
-            # Sample to get bitstring.
-            for rep in range(repetitions):
-                bitstrings[rep] = "".join(
-                    candidates_list[rep][
-                        self._rng.choice(
-                            a=range(len(candidates_list[rep])),
-                            replace=True,
-                            p=candidate_probs_list[rep]
-                            / sum(candidate_probs_list[rep]),
-                        )
-                    ]
+                # Sample new bitstring(s).
+                new_bitstring_indices = self._rng.choice(
+                    len(candidates),
+                    p=probabilities / sum(probabilities),
+                    size=count,
                 )
+                for new_bitstring_index in new_bitstring_indices:
+                    new_bitstrings[candidates[new_bitstring_index]] += 1
+
+            bitstrings = new_bitstrings
+
+        # Unflatten for conversion to cirq.Result.
+        samples = []
+        for bitstring, count in bitstrings.items():
+            for _ in range(count):
+                samples.append(bitstring)
 
         # Return dict of list of bitstrings measured per gate.
         keys_to_bitstrings: List[Dict[str, List[str]]] = [
@@ -226,7 +216,7 @@ class Simulator(cirq.SimulatesSamples):
                     "".join(
                         [
                             bit
-                            for i, bit in enumerate(bitstrings[rep])
+                            for i, bit in enumerate(samples[rep])
                             if i in keys_to_indices[meas]
                         ]
                     )
