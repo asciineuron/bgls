@@ -183,7 +183,7 @@ class Simulator(cirq.SimulatesSamples):
                 return probability
 
             # Update bits on support of this operation.
-            new_bitstrings = collections.defaultdict(int)
+            new_bitstrings: Dict[str, int] = collections.defaultdict(int)
             op_support = {qubit_index[q] for q in op.qubits}
             for bitstring, count in bitstrings.items():
                 candidates = list(
@@ -196,10 +196,10 @@ class Simulator(cirq.SimulatesSamples):
                 )
 
                 # Compute probability of each candidate bitstring.
-                probabilities = [
+                probabilities = np.array([
                     compute_probability(state, "".join(candidate))
                     for candidate in candidates
-                ]
+                ])
 
                 # Sample new bitstring(s).
                 new_bitstring_indices = self._rng.choice(
