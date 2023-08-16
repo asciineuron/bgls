@@ -170,6 +170,18 @@ class Simulator(cirq.SimulatesSamples):
             if cirq.is_diagonal(cirq.unitary(op.gate), atol=1e-8):
                 continue
 
+            # Memoize self._compute_probability.
+            computed_probabilities: Dict[str, float] = {}
+
+            def compute_probability(
+                wavefunction: State, bstring: str
+            ) -> float:
+                if bstring in computed_probabilities.keys():
+                    return computed_probabilities[bstring]
+                probability = self._compute_probability(wavefunction, bstring)
+                computed_probabilities[bstring] = probability
+                return probability
+
             # Update bits on support of this operation.
             new_bitstrings = collections.defaultdict(int)
             op_support = {qubit_index[q] for q in op.qubits}
@@ -185,7 +197,7 @@ class Simulator(cirq.SimulatesSamples):
 
                 # Compute probability of each candidate bitstring.
                 probabilities = [
-                    self._compute_probability(state, "".join(candidate))
+                    compute_probability(state, "".join(candidate))
                     for candidate in candidates
                 ]
 
