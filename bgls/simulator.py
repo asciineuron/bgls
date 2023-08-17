@@ -151,68 +151,71 @@ class Simulator(cirq.SimulatesSamples):
         )  # TODO: Update or require states to have copy method.
         keys_to_indices: Dict[str, List[int]] = {}
 
-        for i, op in enumerate(circuit.all_operations()):
-            if cirq.protocols.is_measurement(op):
-                # Store indices of terminal measurements.
-                if circuit.next_moment_operating_on(op.qubits, i + 1) is None:
-                    meas_key = cirq.protocols.measurement_key_name(op.gate)
-                    if meas_key not in keys_to_indices:
-                        meas_indices = [qubit_index[q] for q in op.qubits]
-                        keys_to_indices[meas_key] = meas_indices
-                # Skip updating state & resampling for intermediate measurements.
-                continue
+        for i, moment in enumerate(circuit.moments):
+            for op in moment.operations:
+                if cirq.protocols.is_measurement(op):
+                    if (
+                        circuit.next_moment_operating_on(op.qubits, i + 1)
+                        is None
+                    ):
+                        meas_key = cirq.protocols.measurement_key_name(op.gate)
+                        if meas_key not in keys_to_indices:
+                            meas_indices = [qubit_index[q] for q in op.qubits]
+                            keys_to_indices[meas_key] = meas_indices
+                    continue
 
-            # Update the state.
-            self._apply_gate(op, state)
+                self._apply_gate(op, state)
 
-            # Skip updating bitstrings for diagonal gates since they do not change
-            # the probability distribution.
-            if cirq.is_diagonal(cirq.unitary(op.gate), atol=1e-8):
-                continue
+                # Skip updating bitstrings for diagonal gates since they do not change
+                # the probability distribution.
+                if cirq.is_diagonal(cirq.unitary(op.gate), atol=1e-8):
+                    continue
 
-            # Memoize self._compute_probability.
-            computed_probabilities: Dict[str, float] = {}
+                # Memoize self._compute_probability.
+                computed_probabilities: Dict[str, float] = {}
 
-            def compute_probability(
-                wavefunction: State, bstring: str
-            ) -> float:
-                if bstring in computed_probabilities.keys():
-                    return computed_probabilities[bstring]
-                probability = self._compute_probability(wavefunction, bstring)
-                computed_probabilities[bstring] = probability
-                return probability
+                def compute_probability(
+                    wavefunction: State, bstring: str
+                ) -> float:
+                    if bstring in computed_probabilities.keys():
+                        return computed_probabilities[bstring]
+                    probability = self._compute_probability(
+                        wavefunction, bstring
+                    )
+                    computed_probabilities[bstring] = probability
+                    return probability
 
-            # Update bits on support of this operation.
-            new_bitstrings: Dict[str, int] = collections.defaultdict(int)
-            op_support = {qubit_index[q] for q in op.qubits}
-            for bitstring, count in bitstrings.items():
-                candidates = list(
-                    itertools.product(
-                        *[
-                            ["0", "1"] if i in op_support else [b]
-                            for i, b in enumerate(bitstring)
+                # Update bits on support of this operation.
+                new_bitstrings: Dict[str, int] = collections.defaultdict(int)
+                op_support = {qubit_index[q] for q in op.qubits}
+                for bitstring, count in bitstrings.items():
+                    candidates = list(
+                        itertools.product(
+                            *[
+                                ["0", "1"] if i in op_support else [b]
+                                for i, b in enumerate(bitstring)
+                            ]
+                        )
+                    )
+
+                    # Compute probability of each candidate bitstring.
+                    probabilities = np.array(
+                        [
+                            compute_probability(state, "".join(candidate))
+                            for candidate in candidates
                         ]
                     )
-                )
 
-                # Compute probability of each candidate bitstring.
-                probabilities = np.array(
-                    [
-                        compute_probability(state, "".join(candidate))
-                        for candidate in candidates
-                    ]
-                )
+                    # Sample new bitstring(s).
+                    new_bitstring_indices = self._rng.choice(
+                        len(candidates),
+                        p=probabilities / sum(probabilities),
+                        size=count,
+                    )
+                    for new_bitstring_index in new_bitstring_indices:
+                        new_bitstrings[candidates[new_bitstring_index]] += 1
 
-                # Sample new bitstring(s).
-                new_bitstring_indices = self._rng.choice(
-                    len(candidates),
-                    p=probabilities / sum(probabilities),
-                    size=count,
-                )
-                for new_bitstring_index in new_bitstring_indices:
-                    new_bitstrings[candidates[new_bitstring_index]] += 1
-
-            bitstrings = new_bitstrings
+                bitstrings = new_bitstrings
 
         # Unflatten for conversion to cirq.Result.
         samples = []

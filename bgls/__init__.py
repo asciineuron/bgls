@@ -22,3 +22,4 @@ from bgls.utils import (
     cirq_stabilizer_ch_bitstring_probability,
     act_on_near_clifford,
 )
+from bgls.near_clifford_solver import circuit_clifford_decomposition
