@@ -179,7 +179,9 @@ class Simulator(cirq.SimulatesSamples):
                 ) -> float:
                     if bstring in computed_probabilities.keys():
                         return computed_probabilities[bstring]
-                    probability = self._compute_probability(wavefunction, bstring)
+                    probability = self._compute_probability(
+                        wavefunction, bstring
+                    )
                     computed_probabilities[bstring] = probability
                     return probability
 
