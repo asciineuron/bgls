@@ -25,7 +25,7 @@ import bgls
 
 
 def cirq_mps_bitstring_probability(
-    mps: cirq.contrib.quimb.MPSState, bitstring: str
+        mps: cirq.contrib.quimb.MPSState, bitstring: str
 ) -> float:
     """
     Returns the probability of measuring the `bitstring` (|z⟩) in the
@@ -71,7 +71,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2**nqubits - 1})
+    assert measurements.issubset({0, 2 ** nqubits - 1})
 
 
 def test_results_same_when_seeded():
@@ -354,15 +354,15 @@ def test_mps_results_match_state_vec():
     assert result_mps == result_state_vector
 
 
-def test_dense_moments_intermediate_measurement_counting():
+def test_intermediate_measurements_are_ignored():
     """For a circuit with several operations per moment, counting operations
     rather than moments can erroneously classify an intermediate measurement
     as terminal"""
     q = cirq.LineQubit.range(3)
     circuit1 = cirq.Circuit(
         (
-            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
-            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
+            cirq.Moment(cirq.X.on_each(q)),
+            cirq.Moment(cirq.X.on_each(q)),
             cirq.Moment(cirq.measure([q[0]], key="q0")),
             cirq.Moment(cirq.X.on(q[0])),
             cirq.Moment(cirq.measure([q[1]], key="q1")),
@@ -371,8 +371,8 @@ def test_dense_moments_intermediate_measurement_counting():
 
     circuit2 = cirq.Circuit(
         (
-            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
-            cirq.Moment(cirq.X.on(q[0]), cirq.X.on(q[1]), cirq.X.on(q[2])),
+            cirq.Moment(cirq.X.on_each(q)),
+            cirq.Moment(cirq.X.on_each(q)),
             cirq.Moment(cirq.X.on(q[0])),
             cirq.Moment(cirq.measure([q[1]], key="q1")),
         )
