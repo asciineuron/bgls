@@ -398,7 +398,7 @@ def test_simulate_with_noise_common_single_qubit_channels(channel):
     qubits = cirq.LineQubit.range(2)
 
     circuit = cirq.testing.random_circuit(qubits, n_moments=3, op_density=1)
-    circuit = circuit.with_noise(channel(0.01)) + cirq.measure(qubits)
+    circuit = circuit.with_noise(channel(0.01))
 
     sim = bgls.Simulator(
         initial_state=cirq.StateVectorSimulationState(
@@ -416,13 +416,11 @@ def test_simulate_with_noise_common_single_qubit_channels(channel):
         circuit,
         observables=observables,
         num_samples=1_000,
-        permit_terminal_measurements=True,
     )
     values_cirq = sim_cirq.sample_expectation_values(
         circuit,
         observables=observables,
         num_samples=1_000,
-        permit_terminal_measurements=True,
     )
     assert np.allclose(values, values_cirq, atol=1e-1)
 
@@ -453,9 +451,7 @@ def test_simulate_with_custom_noise_channel():
     qubits = cirq.LineQubit.range(3)
 
     circuit = cirq.testing.random_circuit(qubits, n_moments=5, op_density=1)
-    circuit = circuit.with_noise(BitAndPhaseFlipChannel(0.01)) + cirq.measure(
-        qubits
-    )
+    circuit = circuit.with_noise(BitAndPhaseFlipChannel(0.01))
 
     sim = bgls.Simulator(
         initial_state=cirq.StateVectorSimulationState(
@@ -477,12 +473,10 @@ def test_simulate_with_custom_noise_channel():
         circuit,
         observables=observables,
         num_samples=1_000,
-        permit_terminal_measurements=True,
     )
     values_cirq = sim_cirq.sample_expectation_values(
         circuit,
         observables=observables,
         num_samples=1_000,
-        permit_terminal_measurements=True,
     )
     assert np.allclose(values, values_cirq, atol=1e-1)
