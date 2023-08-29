@@ -388,3 +388,95 @@ def test_intermediate_measurements_are_ignored():
     results1 = sim.run(circuit1, repetitions=100)
     results2 = sim.run(circuit2, repetitions=100)
     assert results1 == results2
+
+
+@pytest.mark.parametrize("channel", (cirq.depolarize, cirq.amplitude_damp))
+def test_simulate_with_noise_common_single_qubit_channels(channel):
+    """Tests correctness of simulating noisy circuits with
+    common single-qubit channels.
+    """
+    qubits = cirq.LineQubit.range(2)
+
+    circuit = cirq.testing.random_circuit(qubits, n_moments=3, op_density=1)
+    circuit = circuit.with_noise(channel(0.01))
+
+    sim = bgls.Simulator(
+        initial_state=cirq.StateVectorSimulationState(
+            qubits=qubits, initial_state=0
+        ),
+        apply_gate=cirq.protocols.act_on,
+        compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
+    )
+    sim_cirq = cirq.Simulator()
+
+    # Test expectation of observables match Cirq.Simulator.
+    observables = [cirq.X.on(qubits[0]), cirq.Z.on(qubits[1])]
+
+    values = sim.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=1_000,
+    )
+    values_cirq = sim_cirq.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=1_000,
+    )
+    assert np.allclose(values, values_cirq, atol=1e-1)
+
+
+def test_simulate_with_custom_noise_channel():
+    """Tests correctness of simulating circuits with custom
+    noise channels.
+    """
+
+    class BitAndPhaseFlipChannel(cirq.Gate):
+        def _num_qubits_(self) -> int:
+            return 1
+
+        def __init__(self, p: float) -> None:
+            self._p = p
+
+        def _mixture_(self):
+            ps = [1.0 - self._p, self._p]
+            ops = [cirq.unitary(cirq.I), cirq.unitary(cirq.Y)]
+            return tuple(zip(ps, ops))
+
+        def _has_mixture_(self) -> bool:
+            return True
+
+        def _circuit_diagram_info_(self, args) -> str:
+            return f"BitAndPhaseFlip({self._p})"
+
+    qubits = cirq.LineQubit.range(3)
+
+    circuit = cirq.testing.random_circuit(qubits, n_moments=5, op_density=1)
+    circuit = circuit.with_noise(BitAndPhaseFlipChannel(0.01))
+
+    sim = bgls.Simulator(
+        initial_state=cirq.StateVectorSimulationState(
+            qubits=qubits, initial_state=0
+        ),
+        apply_gate=cirq.protocols.act_on,
+        compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
+    )
+    sim_cirq = cirq.Simulator()
+
+    # Test expectation of observables match Cirq.Simulator.
+    observables = [
+        cirq.X.on(qubits[0]),
+        cirq.Y.on(qubits[1]),
+        cirq.Z.on(qubits[2]),
+    ]
+
+    values = sim.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=1_000,
+    )
+    values_cirq = sim_cirq.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=1_000,
+    )
+    assert np.allclose(values, values_cirq, atol=1e-1)

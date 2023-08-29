@@ -168,7 +168,9 @@ class Simulator(cirq.SimulatesSamples):
 
                 # Skip updating bitstrings for diagonal gates since they do not change
                 # the probability distribution.
-                if cirq.is_diagonal(cirq.unitary(op.gate), atol=1e-8):
+                if cirq.has_unitary(op) and cirq.is_diagonal(
+                    cirq.unitary(op.gate), atol=1e-8
+                ):
                     continue
 
                 # Memoize self._compute_probability.
