@@ -15,6 +15,7 @@ Documentation for `BGLS`
    clifford_simulation.ipynb
    mps_simulation.ipynb
    qaoa_example.ipynb
+   using_third_party_states.ipynb
 
 Indices and tables
 ==================
