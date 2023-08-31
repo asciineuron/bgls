@@ -6,6 +6,7 @@ Documentation for `BGLS`
    :caption: Guide
 
    start.ipynb
+   features.ipynb
    how_it_works.ipynb
    tips.ipynb
 
