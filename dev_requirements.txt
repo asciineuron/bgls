@@ -14,3 +14,4 @@ myst-nb
 furo
 quimb
 quimb[tensor]
+ply  # For converting a Qasm string to a Cirq circuit.
