@@ -415,12 +415,12 @@ def test_simulate_with_noise_common_single_qubit_channels(channel):
     values = sim.sample_expectation_values(
         circuit,
         observables=observables,
-        num_samples=1_000,
+        num_samples=2048,
     )
     values_cirq = sim_cirq.sample_expectation_values(
         circuit,
         observables=observables,
-        num_samples=1_000,
+        num_samples=2048,
     )
     assert np.allclose(values, values_cirq, atol=1e-1)
 
@@ -472,11 +472,11 @@ def test_simulate_with_custom_noise_channel():
     values = sim.sample_expectation_values(
         circuit,
         observables=observables,
-        num_samples=1_000,
+        num_samples=2048,
     )
     values_cirq = sim_cirq.sample_expectation_values(
         circuit,
         observables=observables,
-        num_samples=1_000,
+        num_samples=2048,
     )
     assert np.allclose(values, values_cirq, atol=1e-1)

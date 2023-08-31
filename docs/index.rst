@@ -7,6 +7,7 @@ Documentation for `BGLS`
 
    start.ipynb
    how_it_works.ipynb
+   tips.ipynb
 
 .. toctree::
    :maxdepth: 2

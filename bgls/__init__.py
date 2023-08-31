@@ -15,6 +15,7 @@ simulating quantum measurement without computing marginals
 (https://arxiv.org/abs/2112.08499).
 """
 
+from bgls.optimize import optimize_for_bgls
 from bgls.simulator import Simulator
 from bgls.utils import (
     cirq_state_vector_bitstring_probability,
