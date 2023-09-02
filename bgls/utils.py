@@ -95,9 +95,9 @@ def act_on_near_clifford(
     rng: np.random.RandomState = np.random.RandomState(),
 ) -> None:
     """
-    Applies a Clifford+T (or more generically, Rz(theta)) gate to a state.
-    If the gate is Clifford, apply normally,
-    else choose one of the gates in the Clifford-expansion to apply.
+    Applies a Clifford+T (or more generically, Rz(theta)) operation to a state.
+    If the operation is Clifford, apply normally,
+    else choose one of the operations in the Clifford-expansion to apply.
 
     Parameters:
         op: operation to apply.
