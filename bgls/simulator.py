@@ -39,7 +39,7 @@ class Simulator(cirq.SimulatesSamples):
         Args:
             initial_state: The initial state of the circuit (conventionally the
                 all |0⟩ state.) Note: Must be provided to indicate the type and
-                 how to apply gates, in accordance with `apply_op` below.
+                 how to apply operations, in accordance with `apply_op` below.
             apply_op: Function which inputs an operation and state and
                 applies the operation to the state, updating the state in
                 place.
