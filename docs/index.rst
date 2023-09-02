@@ -7,6 +7,7 @@ Documentation for `BGLS`
 
    start.ipynb
    using_custom_states.ipynb
+   features.ipynb
    how_it_works.ipynb
    tips.ipynb
 
