@@ -28,7 +28,7 @@ class Simulator(cirq.SimulatesSamples):
     def __init__(
         self,
         initial_state: State,
-        apply_gate: Callable[
+        apply_op: Callable[
             [cirq.Operation, State], None
         ],  # TODO: Decide on return value.
         compute_probability: Callable[[State, str], float],
@@ -39,21 +39,21 @@ class Simulator(cirq.SimulatesSamples):
         Args:
             initial_state: The initial state of the circuit (conventionally the
                 all |0⟩ state.) Note: Must be provided to indicate the type and
-                 how to apply gates, in accordance with `apply_gate` below.
-            apply_gate: Function which inputs an operation and state and
+                 how to apply gates, in accordance with `apply_op` below.
+            apply_op: Function which inputs an operation and state and
                 applies the operation to the state, updating the state in
                 place.
             compute_probability: Function which inputs a state and bitstring
                 and returns the probability of the given bitstring.
             seed: Seed or random state for sampling.
         """
-        # TODO: These three parameters (initial_state, apply_gate,
+        # TODO: These three parameters (initial_state, apply_op,
         #  and compute_probability) are not independent and should be handled
         #  by a data class, e.g., `BglsOptions`.
 
         # TODO: Add default options.
         self._initial_state = initial_state
-        self._apply_gate = apply_gate
+        self._apply_op = apply_op
         self._compute_probability = compute_probability
 
         self._rng = cirq.value.parse_random_state(seed)
@@ -101,7 +101,7 @@ class Simulator(cirq.SimulatesSamples):
         """
         records: Dict[str, np.ndarray] = {}
         keys_to_bitstrings_list = []
-        if not needs_trajectories(self._apply_gate, circuit):
+        if not needs_trajectories(self._apply_op, circuit):
             keys_to_bitstrings_list = self._perform_bgls_sampling(
                 circuit, repetitions
             )
@@ -164,7 +164,7 @@ class Simulator(cirq.SimulatesSamples):
                             keys_to_indices[meas_key] = meas_indices
                     continue
 
-                self._apply_gate(op, state)
+                self._apply_op(op, state)
 
                 # Skip updating bitstrings for diagonal gates since they do not change
                 # the probability distribution.
@@ -244,7 +244,7 @@ class Simulator(cirq.SimulatesSamples):
 
 
 def needs_trajectories(
-    apply_gate: Callable[[cirq.Operation, State], None],
+    apply_op: Callable[[cirq.Operation, State], None],
     circuit: "cirq.AbstractCircuit",
 ) -> bool:
     """Determines if repeated samples can be drawn for a single
@@ -253,7 +253,7 @@ def needs_trajectories(
     https://github.com/quantumlib/qsim/blob
     /235ae2fc039fb4a98beb4a6114d10c7f8d2070f7/qsimcirq/qsim_simulator.py
     #L29"""
-    if apply_gate != cirq.act_on:
+    if apply_op != cirq.act_on:
         return False
     for op in circuit.all_operations():
         test_op = (

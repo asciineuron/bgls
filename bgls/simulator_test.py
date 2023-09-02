@@ -66,7 +66,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
         initial_state=cirq.StateVectorSimulationState(
             qubits=qubits, initial_state=0
         ),
-        apply_gate=cirq.protocols.act_on,
+        apply_op=cirq.protocols.act_on,
         compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
     )
     results = sim.run(circuit, repetitions=100)
@@ -381,7 +381,7 @@ def test_intermediate_measurements_are_ignored():
         initial_state=cirq.StateVectorSimulationState(
             qubits=q, initial_state=0
         ),
-        apply_gate=cirq.protocols.act_on,
+        apply_op=cirq.protocols.act_on,
         compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
     )
 
@@ -404,7 +404,7 @@ def test_simulate_with_noise_common_single_qubit_channels(channel):
         initial_state=cirq.StateVectorSimulationState(
             qubits=qubits, initial_state=0
         ),
-        apply_gate=cirq.protocols.act_on,
+        apply_op=cirq.protocols.act_on,
         compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
     )
     sim_cirq = cirq.Simulator()
@@ -457,7 +457,7 @@ def test_simulate_with_custom_noise_channel():
         initial_state=cirq.StateVectorSimulationState(
             qubits=qubits, initial_state=0
         ),
-        apply_gate=cirq.protocols.act_on,
+        apply_op=cirq.protocols.act_on,
         compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
     )
     sim_cirq = cirq.Simulator()
