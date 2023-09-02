@@ -6,6 +6,7 @@ Documentation for `BGLS`
    :caption: Guide
 
    start.ipynb
+   using_custom_states.ipynb
    features.ipynb
    how_it_works.ipynb
    tips.ipynb
@@ -17,7 +18,6 @@ Documentation for `BGLS`
    clifford_simulation.ipynb
    mps_simulation.ipynb
    qaoa_example.ipynb
-   using_third_party_states.ipynb
 
 Indices and tables
 ==================
