@@ -49,7 +49,7 @@ setup(
         "Documentation": "https://github.com/asciineuron/bgls",
         "Source": "https://github.com/asciineuron/bgls",
     },
-    python_requires=">=3.7",
+    python_requires=">=3.9.0",
 )
 
 # Restore _version.py to its previous state.
