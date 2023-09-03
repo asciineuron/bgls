@@ -15,12 +15,11 @@ simulating quantum measurement without computing marginals
 (https://arxiv.org/abs/2112.08499).
 """
 
-from bgls.optimize import optimize_for_bgls
 from bgls.simulator import Simulator
-from bgls.utils import (
-    cirq_state_vector_bitstring_probability,
-    cirq_density_matrix_bitstring_probability,
-    cirq_stabilizer_ch_bitstring_probability,
-    act_on_near_clifford,
-)
+
+from bgls import apply
+from bgls import born
+from bgls.optimize import optimize_for_bgls
+from bgls import utils
+
 from bgls.near_clifford_solver import circuit_clifford_decomposition
