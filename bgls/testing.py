@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines helper functions for simulation."""
+"""Tools for unit testing."""
 
 from typing import Union, Sequence, Optional, Set, List
 

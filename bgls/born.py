@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines helper functions for simulation."""
+"""Tools for computing probabilities from states (using Born's rule)."""
 
 from typing import Set, List
 

@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the BGLS Simulator utilities."""
+"""Tests for applying operations to states."""
 
 import pytest
 import numpy as np
