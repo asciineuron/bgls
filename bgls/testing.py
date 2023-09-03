@@ -14,11 +14,7 @@
 
 from typing import Union, Sequence, Optional, Set, List
 
-import numpy as np
-
 import cirq
-
-import bgls
 
 
 def generate_random_circuit(

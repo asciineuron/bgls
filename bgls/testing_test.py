@@ -16,7 +16,7 @@ import pytest
 
 import cirq
 
-import bgls
+import bgls.testing
 
 
 @pytest.mark.parametrize("nqubits", range(3, 5 + 1))
@@ -25,7 +25,7 @@ def test_generate_random_circuit_matches_cirq_random_circuit(nqubits: int):
     qubits = cirq.LineQubit.range(nqubits)
     domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
     domain_cirq = {cirq.H: 1, cirq.CNOT: 2, cirq.S: 1, cirq.T: 1}
-    clifford_circuit = bgls.utils.generate_random_circuit(
+    clifford_circuit = bgls.testing.generate_random_circuit(
         qubits,
         n_moments=100,
         op_density=0.5,

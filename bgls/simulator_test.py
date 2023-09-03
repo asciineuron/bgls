@@ -279,7 +279,7 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
     can work with Clifford+T circuits as well.
     """
     qs = cirq.LineQubit.range(3)
-    circuit = bgls.utils.generate_random_circuit(
+    circuit = bgls.testing.generate_random_circuit(
         qs,
         n_moments=10,
         op_density=0.5,

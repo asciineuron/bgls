@@ -19,6 +19,7 @@ import cirq
 
 import bgls
 import bgls.near_clifford_solver
+import bgls.testing
 
 
 def expansions_equal(exp1, exp2):
@@ -37,7 +38,7 @@ def test_expanded_clifford():
     clifford"""
     qubits = cirq.LineQubit.range(3)
     domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
-    clifford_circuit = bgls.utils.generate_random_circuit(
+    clifford_circuit = bgls.testing.generate_random_circuit(
         qubits,
         n_moments=10,
         op_density=0.5,
@@ -60,7 +61,7 @@ def test_pure_clifford():
     """If no non-clifford gates returns original circuit"""
     qubits = cirq.LineQubit.range(3)
     domain = {cirq.H, cirq.CNOT, cirq.S}
-    clifford_circuit = bgls.utils.generate_random_circuit(
+    clifford_circuit = bgls.testing.generate_random_circuit(
         qubits,
         n_moments=10,
         op_density=0.5,
@@ -108,7 +109,7 @@ def test_larger_clifford_expansion():
     """The number of circuits generated is fidelity * 2**num T gates"""
     qubits = cirq.LineQubit.range(3)
     domain = {cirq.H, cirq.CNOT, cirq.S, cirq.T}
-    clifford_circuit = bgls.utils.generate_random_circuit(
+    clifford_circuit = bgls.testing.generate_random_circuit(
         qubits,
         n_moments=50,
         op_density=0.5,
@@ -140,7 +141,7 @@ def test_rz_circuit_expansion(rad: float):
     """The decomposition works on generic Rz gates as well."""
     qubits = cirq.LineQubit.range(3)
     domain = {cirq.H, cirq.CNOT, cirq.S, cirq.Rz(rads=rad)}
-    clifford_circuit = bgls.utils.generate_random_circuit(
+    clifford_circuit = bgls.testing.generate_random_circuit(
         qubits,
         n_moments=50,
         op_density=0.5,
