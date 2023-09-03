@@ -17,7 +17,7 @@ import numpy as np
 import cirq
 
 
-def cirq_state_vector_bitstring_probability(
+def compute_probability_state_vector(
     state_vector_state: cirq.sim.state_vector_simulation_state.StateVectorSimulationState,
     bitstring: str,
 ) -> float:
@@ -40,7 +40,7 @@ def cirq_state_vector_bitstring_probability(
     )
 
 
-def cirq_density_matrix_bitstring_probability(
+def compute_probability_density_matrix(
     density_matrix_state: cirq.sim.DensityMatrixSimulationState,
     bitstring: str,
 ) -> float:
@@ -60,7 +60,7 @@ def cirq_density_matrix_bitstring_probability(
     return np.abs(density_matrix[index, index])
 
 
-def cirq_stabilizer_ch_bitstring_probability(
+def compute_probability_stabilizer_state(
     stabilizer_ch_form_state: cirq.sim.StabilizerChFormSimulationState,
     bitstring: str,
 ) -> float:
