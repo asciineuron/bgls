@@ -12,8 +12,6 @@
 
 """Tools for computing probabilities from states (using Born's rule)."""
 
-from typing import Set, List
-
 import numpy as np
 
 import cirq
