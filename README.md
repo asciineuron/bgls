@@ -33,8 +33,8 @@ circuit = cirq.Circuit(
 # Run the circuit with BGLS.
 simulator = bgls.Simulator(
     initial_state=cirq.StateVectorSimulationState(qubits=qubits, initial_state=0),
-    apply_gate=cirq.protocols.act_on,
-    compute_probability=bgls.utils.cirq_state_vector_bitstring_probability,
+    apply_op=cirq.protocols.act_on,
+    compute_probability=bgls.born.compute_probability_state_vector,
 )
 results = simulator.run(circuit, repetitions=10)
 print(results.histogram(key="z"))
