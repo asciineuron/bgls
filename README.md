@@ -48,4 +48,4 @@ Counter({0: 6, 3: 4})
 
 ## Documentation
 
-See more details and additional examples in the [Documentation for BGLS](https://asciineuron.github.io/bgls/).
+See more details and examples in the [Documentation for BGLS](https://asciineuron.github.io/bgls/).
