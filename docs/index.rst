@@ -31,8 +31,3 @@ Bgls Simulator
 ================
 .. autoclass:: bgls.Simulator
     :members: run
-
-Bgls Utilities
-================
-.. automodule:: bgls.utils
-    :members:
