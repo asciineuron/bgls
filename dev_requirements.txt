@@ -10,7 +10,6 @@ mypy
 
 # Documentation.
 sphinx
-sphinx-toolbox
 myst-nb
 furo
 quimb
