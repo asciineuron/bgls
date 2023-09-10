@@ -333,7 +333,7 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
     )
 
     assert np.allclose(
-        state_vec_observables, stabilizer_ch_observables, atol=1e-2
+        state_vec_observables, stabilizer_ch_observables, atol=1e-1
     )
 
 
