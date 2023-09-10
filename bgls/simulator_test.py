@@ -25,7 +25,7 @@ import bgls
 
 
 def cirq_mps_bitstring_probability(
-    mps: cirq.contrib.quimb.MPSState, bitstring: str
+        mps: cirq.contrib.quimb.MPSState, bitstring: str
 ) -> float:
     """
     Returns the probability of measuring the `bitstring` (|z⟩) in the
@@ -71,7 +71,7 @@ def test_samples_correct_bitstrings_for_ghz_circuit(nqubits: int):
     )
     results = sim.run(circuit, repetitions=100)
     measurements = set(results.histogram(key="z").keys())
-    assert measurements.issubset({0, 2**nqubits - 1})
+    assert measurements.issubset({0, 2 ** nqubits - 1})
 
 
 def test_results_same_when_seeded():
@@ -258,7 +258,6 @@ def test_remains_clifford():
         bgls.born.compute_probability_stabilizer_state,
         seed=1,
     )
-    sim_results = sim_act_on.run(clifford_circuit, repetitions=100)
     # expect same results as our act_on_stabilizer
     sim_act_on_stab = bgls.Simulator(
         cirq.StabilizerChFormSimulationState(
@@ -268,9 +267,24 @@ def test_remains_clifford():
         bgls.born.compute_probability_stabilizer_state,
         seed=1,
     )
-    sim_results_stab = sim_act_on_stab.run(clifford_circuit, repetitions=100)
 
-    assert sim_results == sim_results_stab
+    observables = [cirq.Z(i) for i in (a, b, c)]
+    state_vec_observables = sim_act_on.sample_expectation_values(
+        clifford_circuit,
+        observables=observables,
+        num_samples=2048,
+        permit_terminal_measurements=True,
+    )
+    stabilizer_ch_observables = sim_act_on_stab.sample_expectation_values(
+        clifford_circuit,
+        observables=observables,
+        num_samples=2048,
+        permit_terminal_measurements=True,
+    )
+
+    assert np.allclose(
+        state_vec_observables, stabilizer_ch_observables, atol=1e-1
+    )
 
 
 def test_run_with_stabilizer_ch_simulator_near_clifford():

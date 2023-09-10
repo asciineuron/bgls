@@ -166,7 +166,8 @@ class Simulator(cirq.SimulatesSamples):
 
                 self._apply_op(op, state)
 
-                # Skip updating bitstrings for diagonal gates since they do not change
+                # Skip updating bitstrings for diagonal gates since they do
+                # not change
                 # the probability distribution.
                 if cirq.has_unitary(op) and cirq.is_diagonal(
                     cirq.unitary(op.gate), atol=1e-8
@@ -254,7 +255,7 @@ def needs_trajectories(
     /235ae2fc039fb4a98beb4a6114d10c7f8d2070f7/qsimcirq/qsim_simulator.py
     #L29"""
     if apply_op != cirq.act_on:
-        return False
+        return True  # False
     for op in circuit.all_operations():
         test_op = (
             op
