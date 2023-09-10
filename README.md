@@ -5,6 +5,8 @@
 [![pages-build-deployment](https://github.com/asciineuron/bgls/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/asciineuron/bgls/actions/workflows/pages/pages-build-deployment)
 [![Documentation](https://img.shields.io/badge/Documentation-GH_Pages-blue)](https://asciineuron.github.io/bgls/)
 [![Repository](https://img.shields.io/badge/GitHub-5C5C5C.svg?logo=github)](https://github.com/asciineuron/bgls)
+[![Unitary Fund](https://img.shields.io/badge/Supported%20By-UNITARY%20FUND-brightgreen.svg?style=for-the-badge)](https://unitary.fund)
+
 
 BGLS is a Python package that implements the **B**ravyi, **G**osset, and **L**iu **S**ampling algorithm presented in *How to simulate quantum measurement without computing marginals ([Phys. Rev. Lett.](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.128.220503)) ([arXiv](https://arxiv.org/abs/2112.08499))* for [Cirq](https://quantumai.google/cirq) circuits.
 
