@@ -19,6 +19,7 @@ import cirq
 import bgls
 
 from typing import Optional, cast, Sequence
+from numpy.typing import DTypeLike
 
 
 def act_on_near_clifford(
@@ -163,10 +164,10 @@ def act_on_noisy_state_vector(
                 tmpst.target_tensor, num_qubits=num_qubits
             )
             probs.append(np.abs(np.vdot(stvec, stvec)))
-        probs = np.asarray(probs)
+        probs_array = np.asarray(probs)
 
         # sample one of the kraus gates and apply it
-        idx = rng.choice(a=len(kraus_ops), p=probs / sum(probs))
+        idx = rng.choice(a=len(kraus_ops), p=probs_array / sum(probs_array))
         cirq.protocols.act_on(kraus_ops[idx], state)
         # renormalize the state vector
         state._state._state_vector /= np.sqrt(probs[idx])
