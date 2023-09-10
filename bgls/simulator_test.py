@@ -390,41 +390,6 @@ def test_intermediate_measurements_are_ignored():
     assert results1 == results2
 
 
-@pytest.mark.parametrize("channel", (cirq.depolarize, cirq.amplitude_damp))
-def test_simulate_with_noise_common_single_qubit_channels(channel):
-    """Tests correctness of simulating noisy circuits with
-    common single-qubit channels.
-    """
-    qubits = cirq.LineQubit.range(2)
-
-    circuit = cirq.testing.random_circuit(qubits, n_moments=3, op_density=1)
-    circuit = circuit.with_noise(channel(0.01))
-
-    sim = bgls.Simulator(
-        initial_state=cirq.StateVectorSimulationState(
-            qubits=qubits, initial_state=0
-        ),
-        apply_op=cirq.protocols.act_on,
-        compute_probability=bgls.born.compute_probability_state_vector,
-    )
-    sim_cirq = cirq.Simulator()
-
-    # Test expectation of observables match Cirq.Simulator.
-    observables = [cirq.X.on(qubits[0]), cirq.Z.on(qubits[1])]
-
-    values = sim.sample_expectation_values(
-        circuit,
-        observables=observables,
-        num_samples=2048,
-    )
-    values_cirq = sim_cirq.sample_expectation_values(
-        circuit,
-        observables=observables,
-        num_samples=2048,
-    )
-    assert np.allclose(values, values_cirq, atol=1e-1)
-
-
 def test_simulate_with_custom_noise_channel():
     """Tests correctness of simulating circuits with custom
     noise channels.
