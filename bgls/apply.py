@@ -109,7 +109,7 @@ def _to_unchecked_state_vector(
     if num_qubits is None and qid_shape is None:
         try:
             qid_shape = cirq.qis.states.infer_qid_shape(state_rep)
-        except:
+        except Exception:
             raise ValueError(
                 "Failed to infer the qid shape of the given state. "
                 "Please specify the qid shape explicitly using either the "
