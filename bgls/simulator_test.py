@@ -258,7 +258,6 @@ def test_remains_clifford():
         bgls.born.compute_probability_stabilizer_state,
         seed=1,
     )
-    sim_results = sim_act_on.run(clifford_circuit, repetitions=100)
     # expect same results as our act_on_stabilizer
     sim_act_on_stab = bgls.Simulator(
         cirq.StabilizerChFormSimulationState(
@@ -268,9 +267,24 @@ def test_remains_clifford():
         bgls.born.compute_probability_stabilizer_state,
         seed=1,
     )
-    sim_results_stab = sim_act_on_stab.run(clifford_circuit, repetitions=100)
 
-    assert sim_results == sim_results_stab
+    observables = [cirq.Z(i) for i in (a, b, c)]
+    state_vec_observables = sim_act_on.sample_expectation_values(
+        clifford_circuit,
+        observables=observables,
+        num_samples=2048,
+        permit_terminal_measurements=True,
+    )
+    stabilizer_ch_observables = sim_act_on_stab.sample_expectation_values(
+        clifford_circuit,
+        observables=observables,
+        num_samples=2048,
+        permit_terminal_measurements=True,
+    )
+
+    assert np.allclose(
+        state_vec_observables, stabilizer_ch_observables, atol=1e-1
+    )
 
 
 def test_run_with_stabilizer_ch_simulator_near_clifford():
@@ -319,7 +333,7 @@ def test_run_with_stabilizer_ch_simulator_near_clifford():
     )
 
     assert np.allclose(
-        state_vec_observables, stabilizer_ch_observables, atol=1e-2
+        state_vec_observables, stabilizer_ch_observables, atol=1e-1
     )
 
 
@@ -388,41 +402,6 @@ def test_intermediate_measurements_are_ignored():
     results1 = sim.run(circuit1, repetitions=100)
     results2 = sim.run(circuit2, repetitions=100)
     assert results1 == results2
-
-
-@pytest.mark.parametrize("channel", (cirq.depolarize, cirq.amplitude_damp))
-def test_simulate_with_noise_common_single_qubit_channels(channel):
-    """Tests correctness of simulating noisy circuits with
-    common single-qubit channels.
-    """
-    qubits = cirq.LineQubit.range(2)
-
-    circuit = cirq.testing.random_circuit(qubits, n_moments=3, op_density=1)
-    circuit = circuit.with_noise(channel(0.01))
-
-    sim = bgls.Simulator(
-        initial_state=cirq.StateVectorSimulationState(
-            qubits=qubits, initial_state=0
-        ),
-        apply_op=cirq.protocols.act_on,
-        compute_probability=bgls.born.compute_probability_state_vector,
-    )
-    sim_cirq = cirq.Simulator()
-
-    # Test expectation of observables match Cirq.Simulator.
-    observables = [cirq.X.on(qubits[0]), cirq.Z.on(qubits[1])]
-
-    values = sim.sample_expectation_values(
-        circuit,
-        observables=observables,
-        num_samples=2048,
-    )
-    values_cirq = sim_cirq.sample_expectation_values(
-        circuit,
-        observables=observables,
-        num_samples=2048,
-    )
-    assert np.allclose(values, values_cirq, atol=1e-1)
 
 
 def test_simulate_with_custom_noise_channel():

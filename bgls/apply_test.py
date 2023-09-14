@@ -44,3 +44,38 @@ def test_generic_rz_gates(rads: float):
     assert (state1.target_tensor == state2.target_tensor).all() or (
         state1.target_tensor == state2S.target_tensor
     ).all()
+
+
+@pytest.mark.parametrize("channel", (cirq.depolarize, cirq.amplitude_damp))
+def test_act_on_noisy_state_vector(channel):
+    """Tests correctness of simulating noisy circuits with
+    common single-qubit channels.
+    """
+    qubits = cirq.LineQubit.range(2)
+
+    circuit = cirq.testing.random_circuit(qubits, n_moments=3, op_density=1)
+    circuit = circuit.with_noise(channel(0.01))
+
+    sim = bgls.Simulator(
+        initial_state=cirq.StateVectorSimulationState(
+            qubits=qubits, initial_state=0
+        ),
+        apply_op=bgls.apply.act_on_noisy_state_vector,
+        compute_probability=bgls.born.compute_probability_state_vector,
+    )
+    sim_cirq = cirq.Simulator()
+
+    # Test expectation of observables match Cirq.Simulator.
+    observables = [cirq.X.on(qubits[0]), cirq.Z.on(qubits[1])]
+
+    values = sim.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=2048,
+    )
+    values_cirq = sim_cirq.sample_expectation_values(
+        circuit,
+        observables=observables,
+        num_samples=2048,
+    )
+    assert np.allclose(values, values_cirq, atol=1e-1)

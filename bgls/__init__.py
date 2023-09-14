@@ -19,6 +19,7 @@ from bgls.simulator import Simulator
 
 from bgls import apply
 from bgls import born
+from bgls import testing
 from bgls.optimize import optimize_for_bgls
 
 from bgls.near_clifford_solver import circuit_clifford_decomposition
