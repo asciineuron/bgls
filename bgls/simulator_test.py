@@ -110,7 +110,10 @@ def test_final_states():
 
     _ = sim.run(circuit, repetitions=100)
     assert len(sim.final_states) == 1
-    assert np.allclose(sim.final_states[0].target_tensor.flatten(), np.array([1, 0, 0, 1]) / np.sqrt(2))
+    assert np.allclose(
+        sim.final_states[0].target_tensor.flatten(),
+        np.array([1, 0, 0, 1]) / np.sqrt(2),
+    )
 
     sim.clear_final_states()
     assert len(sim.final_states) == 0
