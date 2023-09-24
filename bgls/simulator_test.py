@@ -93,6 +93,42 @@ def test_results_same_when_seeded():
     assert result2 == result1
 
 
+def test_final_states():
+    a, b = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.H.on(a),
+        cirq.CNOT.on(a, b),
+        cirq.measure(a, b, key="z"),
+    )
+
+    sim = bgls.Simulator(
+        cirq.StateVectorSimulationState(qubits=(a, b), initial_state=0),
+        cirq.protocols.act_on,
+        bgls.born.compute_probability_state_vector,
+    )
+    assert len(sim.final_states) == 0
+
+    _ = sim.run(circuit, repetitions=100)
+    assert len(sim.final_states) == 1
+    assert np.allclose(sim.final_states[0].target_tensor.flatten(), np.array([1, 0, 0, 1]) / np.sqrt(2))
+
+    sim.clear_final_states()
+    assert len(sim.final_states) == 0
+
+    needs_trajectories_circuit = cirq.Circuit(
+        cirq.H.on(a),
+        cirq.bit_flip(0.01).on_each(a, b),
+        cirq.CNOT.on(a, b),
+        cirq.measure(a, b, key="z"),
+    )
+    sim.run(needs_trajectories_circuit, repetitions=10)
+    assert len(sim.final_states) == 10
+
+    sim.clear_final_states()
+    assert len(sim.final_states) == 0
+
+
+
 def test_simulation_with_intermediate_measurements():
     """Test simulation with intermediate measurements."""
     a, b = cirq.LineQubit.range(2)
@@ -103,15 +139,19 @@ def test_simulation_with_intermediate_measurements():
         cirq.measure(a, b, key="terminal"),
     )
 
-    state = cirq.StateVectorSimulationState(qubits=(a, b), initial_state=0)
     sim = bgls.Simulator(
-        state,
+        cirq.StateVectorSimulationState(qubits=(a, b), initial_state=0),
         cirq.protocols.act_on,
         bgls.born.compute_probability_state_vector,
     )
-    result = sim.run(circuit, repetitions=1000)
+    result = sim.run(circuit, repetitions=100)
     assert {0, 3}.issuperset(result.histogram(key="terminal").keys())
-    # TODO: Check state to make sure measurements were applied.
+
+    # Check to make sure the measurement was applied and we get |00⟩ or |11⟩, not |00⟩ + |11⟩.
+    for final_state in sim.final_states:
+        assert np.allclose(
+            final_state.target_tensor.flatten(), [1, 0, 0, 0]
+        ) or np.allclose(final_state.target_tensor.flatten(), [0, 0, 0, 1])
 
 
 def test_run_with_no_terminal_measurements_raises_value_error():

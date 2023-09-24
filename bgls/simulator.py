@@ -86,6 +86,14 @@ class Simulator(cirq.SimulatesSamples):
         self._compute_probability = compute_probability
 
         self._rng = cirq.value.parse_random_state(seed)
+        self._final_states = []
+
+    @property
+    def final_states(self) -> List[State]:
+        return self._final_states
+
+    def clear_final_states(self) -> None:
+        self._final_states = []
 
     def _run(
         self,
@@ -256,6 +264,9 @@ class Simulator(cirq.SimulatesSamples):
                         new_bitstrings[candidates[new_bitstring_index]] += 1
 
                 bitstrings = new_bitstrings
+
+        # Store final state.
+        self._final_states.append(state)
 
         # Unflatten for conversion to cirq.Result.
         samples = []
