@@ -27,9 +27,14 @@ State = TypeVar("State", bound=cirq.SimulationStateBase)
 def needs_trajectories(
     circuit: "cirq.AbstractCircuit",
 ) -> bool:
-    """Determines if repeated samples can be drawn for a single
-    simulation. For near-clifford, noisy, or non-unitary circuits this
-    is not possible. Adapted from
+    """Determines if a circuit needs trajectories for simulation.
+
+    This is true if the circuit has non-unitary channels which are not terminal measurements.
+
+    Args:
+        circuit: Circuit to check if trajectories are needed for simulation.
+
+    Adapted from
     https://github.com/quantumlib/qsim/blob/235ae2fc039fb4a98beb4a6114d10c7f8d2070f7/qsimcirq/qsim_simulator.py#L29.
     """
     if not circuit.are_all_measurements_terminal():
