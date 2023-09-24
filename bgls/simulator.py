@@ -24,6 +24,30 @@ import cirq
 State = TypeVar("State", bound=cirq.SimulationStateBase)
 
 
+def needs_trajectories(
+    circuit: "cirq.AbstractCircuit",
+) -> bool:
+    """Determines if repeated samples can be drawn for a single
+    simulation. For near-clifford, noisy, or non-unitary circuits this
+    is not possible. Adapted from
+    https://github.com/quantumlib/qsim/blob/235ae2fc039fb4a98beb4a6114d10c7f8d2070f7/qsimcirq/qsim_simulator.py#L29.
+    """
+    if not circuit.are_all_measurements_terminal():
+        return True
+
+    for op in circuit.all_operations():
+        test_op = (
+            op
+            if not cirq.is_parameterized(op)
+            else cirq.resolve_parameters(
+                op, {param: 1 for param in cirq.parameter_names(op)}
+            )
+        )
+        if not (cirq.is_measurement(test_op) or cirq.has_unitary(test_op)):
+            return True
+    return False
+
+
 class Simulator(cirq.SimulatesSamples):
     def __init__(
         self,
@@ -94,6 +118,9 @@ class Simulator(cirq.SimulatesSamples):
     ) -> Dict[str, np.ndarray]:
         """Returns a number of measurements by simulating the circuit.
 
+        If the circuit is unitary, all repetitions are sampled in one pass through
+        the circuit. Else, multiple passes are performed.
+
         Args:
             circuit: The circuit to simulate.
             repetitions: The number of times to simulate the circuit
@@ -101,16 +128,24 @@ class Simulator(cirq.SimulatesSamples):
         """
         records: Dict[str, np.ndarray] = {}
         keys_to_bitstrings_list = []
-        if not needs_trajectories(self._apply_op, circuit):
-            keys_to_bitstrings_list = self._perform_bgls_sampling(
-                circuit, repetitions
+
+        if not needs_trajectories(circuit):
+            # Sample all bitstrings in one pass through the circuit.
+            keys_to_bitstrings_list = (
+                self._sample_from_one_wavefunction_evolution(
+                    circuit, repetitions
+                )
             )
         else:
+            # Sample one bitstring per trajectory.
             for _ in range(repetitions):
                 keys_to_bitstrings_list.append(
-                    self._perform_bgls_sampling(circuit, 1)[0]
+                    self._sample_from_one_wavefunction_evolution(
+                        circuit, repetitions=1
+                    )[0]
                 )
 
+        # Format sampled bitstrings.
         for rep, keys_to_bitstrings in enumerate(keys_to_bitstrings_list):
             for meas_key in keys_to_bitstrings:
                 if rep == 0 and meas_key not in records:
@@ -126,11 +161,10 @@ class Simulator(cirq.SimulatesSamples):
                 ]
         return records
 
-    def _perform_bgls_sampling(
+    def _sample_from_one_wavefunction_evolution(
         self, circuit: "cirq.AbstractCircuit", repetitions: int = 1
     ) -> List[Dict[str, List[str]]]:
-        """Performs the actual bgls sampling algorithm. Updates all
-        repetitions of bitstrings in one pass through the circuit.
+        """Returns bitstrings sampled in parallel via one pass through the circuit.
 
         Args:
             circuit: The circuit to simulate.
@@ -153,24 +187,23 @@ class Simulator(cirq.SimulatesSamples):
 
         for i, moment in enumerate(circuit.moments):
             for op in moment.operations:
-                if cirq.protocols.is_measurement(op):
-                    if (
-                        circuit.next_moment_operating_on(op.qubits, i + 1)
-                        is None
-                    ):
-                        meas_key = cirq.protocols.measurement_key_name(op.gate)
-                        if meas_key not in keys_to_indices:
-                            meas_indices = [qubit_index[q] for q in op.qubits]
-                            keys_to_indices[meas_key] = meas_indices
+                # Store keys of terminal measurements.
+                if (
+                    cirq.protocols.is_measurement(op)
+                    and circuit.next_moment_operating_on(op.qubits, i + 1)
+                    is None
+                ):
+                    meas_key = cirq.protocols.measurement_key_name(op.gate)
+                    if meas_key not in keys_to_indices:
+                        meas_indices = [qubit_index[q] for q in op.qubits]
+                        keys_to_indices[meas_key] = meas_indices
                     continue
 
                 self._apply_op(op, state)
 
                 # Skip updating bitstrings for diagonal gates since they do not change
                 # the probability distribution.
-                if cirq.has_unitary(op) and cirq.is_diagonal(
-                    cirq.unitary(op.gate), atol=1e-8
-                ):
+                if all(cirq.is_diagonal(kraus) for kraus in cirq.kraus(op)):
                     continue
 
                 # Memoize self._compute_probability.
@@ -241,28 +274,3 @@ class Simulator(cirq.SimulatesSamples):
                     )
                 ]
         return keys_to_bitstrings
-
-
-def needs_trajectories(
-    apply_op: Callable[[cirq.Operation, State], None],
-    circuit: "cirq.AbstractCircuit",
-) -> bool:
-    """Determines if repeated samples can be drawn for a single
-    simulation. For near-clifford, noisy, or non-unitary circuits this
-    is not possible. Taken from
-    https://github.com/quantumlib/qsim/blob
-    /235ae2fc039fb4a98beb4a6114d10c7f8d2070f7/qsimcirq/qsim_simulator.py
-    #L29"""
-    if apply_op != cirq.act_on:
-        return False
-    for op in circuit.all_operations():
-        test_op = (
-            op
-            if not cirq.is_parameterized(op)
-            else cirq.resolve_parameters(
-                op, {param: 1 for param in cirq.parameter_names(op)}
-            )
-        )
-        if not (cirq.is_measurement(test_op) or cirq.has_unitary(test_op)):
-            return True
-    return False
