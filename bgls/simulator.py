@@ -86,7 +86,7 @@ class Simulator(cirq.SimulatesSamples):
         self._compute_probability = compute_probability
 
         self._rng = cirq.value.parse_random_state(seed)
-        self._final_states = []
+        self._final_states: List[State] = []
 
     @property
     def final_states(self) -> List[State]:
