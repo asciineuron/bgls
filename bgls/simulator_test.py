@@ -128,7 +128,6 @@ def test_final_states():
     assert len(sim.final_states) == 0
 
 
-
 def test_simulation_with_intermediate_measurements():
     """Test simulation with intermediate measurements."""
     a, b = cirq.LineQubit.range(2)
