@@ -93,42 +93,67 @@ def test_results_same_when_seeded():
     assert result2 == result1
 
 
-def test_intermediate_measurements():
-    """Test simulation with/without intermediate measurements is the same."""
-    q0, q1, q2 = cirq.LineQubit.range(3)
-    ghz = cirq.Circuit(
-        cirq.H(q0),
-        cirq.CNOT(q0, q1),
-        cirq.CNOT(q1, q2),
-        cirq.measure([q0, q1, q2], key="result"),
-    )
-    ghz_intermediate = cirq.Circuit(
-        cirq.H(q0),
-        cirq.measure([q0, q2], key="intermediate1"),
-        cirq.CNOT(q0, q1),
-        cirq.measure([q0, q1, q2], key="intermediate2"),
-        cirq.CNOT(q1, q2),
-        cirq.measure([q0, q1, q2], key="result"),
+def test_final_states():
+    a, b = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.H.on(a),
+        cirq.CNOT.on(a, b),
+        cirq.measure(a, b, key="z"),
     )
 
     sim = bgls.Simulator(
-        cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
+        cirq.StateVectorSimulationState(qubits=(a, b), initial_state=0),
         cirq.protocols.act_on,
         bgls.born.compute_probability_state_vector,
-        seed=1,
     )
-    result = sim.run(ghz, repetitions=100)
+    assert len(sim.final_states) == 0
+
+    _ = sim.run(circuit, repetitions=100)
+    assert len(sim.final_states) == 1
+    assert np.allclose(
+        sim.final_states[0].target_tensor.flatten(),
+        np.array([1, 0, 0, 1]) / np.sqrt(2),
+    )
+
+    sim.clear_final_states()
+    assert len(sim.final_states) == 0
+
+    needs_trajectories_circuit = cirq.Circuit(
+        cirq.H.on(a),
+        cirq.bit_flip(0.01).on_each(a, b),
+        cirq.CNOT.on(a, b),
+        cirq.measure(a, b, key="z"),
+    )
+    sim.run(needs_trajectories_circuit, repetitions=10)
+    assert len(sim.final_states) == 10
+
+    sim.clear_final_states()
+    assert len(sim.final_states) == 0
+
+
+def test_simulation_with_intermediate_measurements():
+    """Test simulation with intermediate measurements."""
+    a, b = cirq.LineQubit.range(2)
+    circuit = cirq.Circuit(
+        cirq.H.on(a),
+        cirq.measure(a, key="intermediate"),
+        cirq.CNOT.on(a, b),
+        cirq.measure(a, b, key="terminal"),
+    )
 
     sim = bgls.Simulator(
-        cirq.StateVectorSimulationState(qubits=(q0, q1, q2), initial_state=0),
+        cirq.StateVectorSimulationState(qubits=(a, b), initial_state=0),
         cirq.protocols.act_on,
         bgls.born.compute_probability_state_vector,
-        seed=1,
     )
-    result_with_intermediate_measurements = sim.run(
-        ghz_intermediate, repetitions=100
-    )
-    assert result_with_intermediate_measurements == result
+    result = sim.run(circuit, repetitions=100)
+    assert {0, 3}.issuperset(result.histogram(key="terminal").keys())
+
+    # Check to make sure the measurement was applied and we get |00⟩ or |11⟩, not |00⟩ + |11⟩.
+    for final_state in sim.final_states:
+        assert np.allclose(
+            final_state.target_tensor.flatten(), [1, 0, 0, 0]
+        ) or np.allclose(final_state.target_tensor.flatten(), [0, 0, 0, 1])
 
 
 def test_run_with_no_terminal_measurements_raises_value_error():
@@ -354,10 +379,10 @@ def test_mps_results_match_state_vec():
     assert result_mps == result_state_vector
 
 
-def test_intermediate_measurements_are_ignored():
-    """For a circuit with several operations per moment, counting operations
-    rather than moments can erroneously classify an intermediate measurement
-    as terminal"""
+def test_intermediate_measurement_keys_are_ignored():
+    """Tests that only terminal measurements are stored in simulation results."""
+    # TODO: Cirq does store intermediate measurement keys.
+    #  Decide if we want to match this behavior.
     q = cirq.LineQubit.range(3)
     circuit1 = cirq.Circuit(
         (
@@ -387,6 +412,7 @@ def test_intermediate_measurements_are_ignored():
 
     results1 = sim.run(circuit1, repetitions=100)
     results2 = sim.run(circuit2, repetitions=100)
+
     assert results1 == results2
 
 
