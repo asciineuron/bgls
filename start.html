@@ -1,0 +1,447 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="When to use BGLS" href="when_to_use.html" /><link rel="prev" title="Documentation for BGLS" href="index.html" />
+
+    <!-- Generated with Sphinx 5.3.0 and Furo 2023.03.27 -->
+        <title>Getting started - BGLS documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">BGLS  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">BGLS  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_to_use.html">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="using_custom_states.html">Using custom states with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_it_works.html">How <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips for using <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="clifford_simulation.html">Using BGLS on Clifford and near-Clifford circuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mps_simulation.html">Using BGLS to sample from Matrix Product State Circuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qaoa_example.html">Using BGLS with MPS to solve QAOA problems</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">#</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">BGLS</span></code> is a Python package that implements the <strong>B</strong>ravyi, <strong>G</strong>osset, and <strong>L</strong>iu <strong>S</strong>ampling algorithm presented in <em>How to simulate quantum measurement without computing marginals (<a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.128.220503">Phys. Rev. Lett.</a>) (<a class="reference external" href="https://arxiv.org/abs/2112.08499">arXiv</a>)</em>.</p>
+<section id="quick-start">
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this heading">#</a></h2>
+<p>Install <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">bgls</span></code>. The following example shows how to use the package.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Setup.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">cirq</span>
+
+<span class="kn">import</span> <span class="nn">bgls</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Define a circuit.&quot;&quot;&quot;</span>
+<span class="n">nqubits</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">qubits</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">nqubits</span><span class="p">)</span>
+
+<span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="o">*</span><span class="n">qubits</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">circuit</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="overflow: auto; white-space: pre;">0: ───H───@───M(&#x27;z&#x27;)───
+          │   │
+1: ───────X───M────────</pre></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Use BGLS to simulate the circuit.&quot;&quot;&quot;</span>
+<span class="n">simulator</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">initial_state</span><span class="o">=</span><span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="n">qubits</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">apply_op</span><span class="o">=</span><span class="n">cirq</span><span class="o">.</span><span class="n">protocols</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">compute_probability</span><span class="o">=</span><span class="n">bgls</span><span class="o">.</span><span class="n">born</span><span class="o">.</span><span class="n">compute_probability_state_vector</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">cirq</span><span class="o">.</span><span class="n">plot_state_histogram</span><span class="p">(</span><span class="n">results</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/d65be1c6d445954deebc7e313a03193c7f43f92fdd62a026ea8dd970576fecd3.png" src="_images/d65be1c6d445954deebc7e313a03193c7f43f92fdd62a026ea8dd970576fecd3.png" />
+</div>
+</div>
+</section>
+<section id="more-detail-how-to-create-a-bgls-simulator">
+<h2>More detail: How to create a <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code><a class="headerlink" href="#more-detail-how-to-create-a-bgls-simulator" title="Permalink to this heading">#</a></h2>
+<p>Notice from the above example that there are three ingredients needed to create a <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code>:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">initial_state</span></code>: The initial quantum state (wavefunction) of the circuit, including what type the wavefunction is (state vector, density matrix, tensor network, etc.).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_op</span></code>: A function for applying operations to the initial (and intermediate) states.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compute_probability</span></code>: A function for calculating the probability of sampling a bitstring from the input state type.</p></li>
+</ol>
+<blockquote>
+<div><p><strong>Note</strong>: A function to compute marginal distributions, which is used in the typical “qubit-by-qubit” sampling algorithm, is not needed. This is the primary purpose of the BGLS “gate-by-gate” sampling algorithm: when it is easier to compute probabilities than it is to compute marginal distributions, the BGLS algorithm is advantageous to use. See more in <a class="reference internal" href="how_it_works.html"><span class="doc std std-doc">How <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> works</span></a> and <a class="reference internal" href="when_to_use.html"><span class="doc std std-doc">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></span></a>.</p>
+</div></blockquote>
+<p>Any wavefunction type can be used with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code>. In the example above, we used a <code class="docutils literal notranslate"><span class="pre">cirq.StateVectorSimulationState</span></code> which represents the wavefunction as a state vector.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Provide a representation of the (initial) wavefunction, here a cirq.StateVectorSimulationState.&quot;&quot;&quot;</span>
+<span class="n">wavefunction</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="n">qubits</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Visualize the wavefunction.</span>
+<span class="n">wavefunction</span><span class="o">.</span><span class="n">target_tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">nqubits</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j], dtype=complex64)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Once the state is provided, <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> needs to know how to apply operations to the state. Here, we can do this with <code class="docutils literal notranslate"><span class="pre">cirq.protocols.act_on</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Define a function for applying operations to the state.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+
+<span class="k">def</span> <span class="nf">apply_op</span><span class="p">(</span><span class="n">operation</span><span class="p">:</span> <span class="n">cirq</span><span class="o">.</span><span class="n">GateOperation</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">protocols</span><span class="o">.</span><span class="n">act_on</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+
+<span class="c1"># Example: Apply operation and visualize the updated wavefunction.</span>
+<span class="n">apply_op</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">wavefunction</span><span class="p">)</span>
+<span class="n">wavefunction</span><span class="o">.</span><span class="n">target_tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">nqubits</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([ 0.707+0.j,  0.   +0.j,  0.707+0.j, -0.   +0.j], dtype=complex64)
+</pre></div>
+</div>
+</div>
+</div>
+<blockquote>
+<div><p>Note: The <code class="docutils literal notranslate"><span class="pre">apply_op</span></code> function must modify the <code class="docutils literal notranslate"><span class="pre">state</span></code> in-place as above.</p>
+</div></blockquote>
+<p>Last, <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> needs to know how to compute the probability of sampling a bitstring <code class="docutils literal notranslate"><span class="pre">z</span></code> from the <code class="docutils literal notranslate"><span class="pre">wavefunction</span></code> <span class="math notranslate nohighlight">\(|\psi\rangle\)</span>. Here this is given by <span class="math notranslate nohighlight">\(| \langle z | \psi \rangle | ^ 2\)</span> and can be computed via the following function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Define a function for computing the probability of sampling a bitstring.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="k">def</span> <span class="nf">probability_of_bitstring</span><span class="p">(</span>
+    <span class="n">wavefunction</span><span class="p">:</span> <span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">,</span>
+    <span class="n">bitstring</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">wavefunction</span><span class="o">.</span><span class="n">target_tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">nqubits</span><span class="p">)[</span><span class="nb">int</span><span class="p">(</span><span class="n">bitstring</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span> <span class="o">**</span> <span class="mi">2</span>
+
+
+<span class="c1"># Example: Calculating some p(z) for some bitstrings z.</span>
+<span class="k">for</span> <span class="n">bitstring</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;00&quot;</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">}:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Probability of sampling </span><span class="si">{</span><span class="n">bitstring</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">probability_of_bitstring</span><span class="p">(</span><span class="n">wavefunction</span><span class="p">,</span><span class="w"> </span><span class="n">bitstring</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Probability of sampling 10 is 0.50
+Probability of sampling 00 is 0.50
+</pre></div>
+</div>
+</div>
+</div>
+<blockquote>
+<div><p>Note: This function is identical to <code class="docutils literal notranslate"><span class="pre">bgls.born.compute_probability_state_vector</span></code> used in the Quick start example.</p>
+</div></blockquote>
+<p>With these three ingredients you can create a <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code> and execute circuits with <code class="docutils literal notranslate"><span class="pre">bgls.Simulator.run</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulator</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span><span class="n">wavefunction</span><span class="p">,</span> <span class="n">apply_op</span><span class="p">,</span> <span class="n">probability_of_bitstring</span><span class="p">)</span>
+
+<span class="n">simulator</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>z=0, 0
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="when-to-use-the-bgls-simulator">
+<h2>When to use the <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code><a class="headerlink" href="#when-to-use-the-bgls-simulator" title="Permalink to this heading">#</a></h2>
+<p>Other than introducing the <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code>, there’s (probably) no good reason to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> with a statevector simulator as above: the samples can be drawn from the final state just as easily. The power of the <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code> comes in situations where it is easier to compute probabilities than compute marginal distributions - see <a class="reference internal" href="when_to_use.html"><span class="doc std std-doc">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></span></a> for more discussion and examples.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="when_to_use.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Alex Shapiro, Ryan LaRose
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Getting started</a><ul>
+<li><a class="reference internal" href="#quick-start">Quick start</a></li>
+<li><a class="reference internal" href="#more-detail-how-to-create-a-bgls-simulator">More detail: How to create a <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code></a></li>
+<li><a class="reference internal" href="#when-to-use-the-bgls-simulator">When to use the <code class="docutils literal notranslate"><span class="pre">bgls.Simulator</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

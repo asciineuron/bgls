@@ -1,0 +1,114 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# When to use `BGLS`"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "As discused in the [Getting started guide](./start.ipynb), you can use `BGLS` with different representations of quantum states (state vectors, density matrices, tensor networks, etc.), functions to apply operations to these states, and functions to compute probabilities from these states - but when should you use `BGLS`?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## The short answer"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Relative to the usual qubit by qubit sampling algorithm, you should use `BGLS` when its easier to compute probabilities than it is to compute marginal distributions. This is generally true for memory-limited cases when you cannot store the entire statevector in classical memory, for example with [Clifford states](./clifford_simulation.ipynb) and [matrix product states](./mps_simulation.ipynb). Read below to see a summary of [Bravyi, Gosset, and Liu's argument](https://arxiv.org/abs/2112.084990) for why this is true."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Understanding the cost"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In both qubit-by-qubit sampling and `BGLS` gate-by-gate sampling, the state is evolved in the same manner. The difference is that `BGLS` computes a set of probabilities during state evolution to sample bitstrings, whereas qubit-by-qubit sampling computes marginal distributions from the final state."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### `BGLS` gate-by-gate sampling"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "How many probabilities do you need to compute during state evolution for `BGLS`? For an operation $U_t$, you need to compute $2^{\\text{supp}(U_t)}$ probabilities where $\\text{supp}(U_t)$ (the support of $U_t$) is the number of qubits that $U_t$ acts on. So for a depth $d$ circuit $U := U_d \\cdots U_1$ you need to compute $\\sum_{t = 1}^{d} 2^{\\text{supp}(U_t)}$ probabilities. This quantity is upper bounded by $d 2^k$ where $k = \\max_t \\text{supp}(U_t)$. Letting $f(n, d)$ denote the cost of computing an amplitude (probability) from a depth $d$, $n$-qubit circuit, the cost of `BGLS` gate-by-gate sampling is thus at most $d 2^k f(n, d)$. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Qubit-by-qubit sampling"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Marginal distributions have the form $\\langle 0 | U^\\dagger (|x \\rangle \\langle x| \\otimes I) U | 0 \\rangle$, so we expect computing a marginal distribution to have a cost comparable to $f(n, 2d)$. Assuming we sample $n$-bit strings the cost qubit-by-qubit sampling is thus $n f(n, 2d)$."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### The cost ratio"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "From the above, we can generally say that it makes sense to use `BGLS` when $r := n f(n, 2d) / d 2^k f(n, d)$ is large.\n",
+    "\n",
+    "For Schrodinger simulation (full statevector simulation), we have that $f(n, d) \\sim n d 2^n$. In this case $r \\sim 2n / d 2^k$.\n",
+    "\n",
+    "For Feynman simulation (sum over paths), we have that $f(n, d) \\sim n (2d)^{n + 1}$. In this case $r \\sim n 2^n / d 2 ^k$. Unlike the Schrodinger simulation case above, the ratio now grows exponentially in $n$ and the advantage of `BGLS` is significant. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Examples"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Refer to the examples, including [Clifford states](./clifford_simulation.ipynb) and [matrix product states](./mps_simulation.ipynb), for specific illustrations of when using `BGLS` is advantageous."
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python"
+  },
+  "orig_nbformat": 4
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

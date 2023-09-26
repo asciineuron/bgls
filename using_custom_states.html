@@ -1,0 +1,514 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Features" href="features.html" /><link rel="prev" title="When to use BGLS" href="when_to_use.html" />
+
+    <!-- Generated with Sphinx 5.3.0 and Furo 2023.03.27 -->
+        <title>Using custom states with BGLS - BGLS documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">BGLS  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">BGLS  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="start.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_to_use.html">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Using custom states with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_it_works.html">How <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips for using <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="clifford_simulation.html">Using BGLS on Clifford and near-Clifford circuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mps_simulation.html">Using BGLS to sample from Matrix Product State Circuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qaoa_example.html">Using BGLS with MPS to solve QAOA problems</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="using-custom-states-with-bgls">
+<h1>Using custom states with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code><a class="headerlink" href="#using-custom-states-with-bgls" title="Permalink to this heading">#</a></h1>
+<p>As mentioned in the <a class="reference internal" href="start.html"><span class="doc std std-doc">Getting started guide</span></a>, you can use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> with any representations of quantum states, so long as you specify how to <code class="docutils literal notranslate"><span class="pre">apply_op</span></code>s and <code class="docutils literal notranslate"><span class="pre">compute_probability</span></code> from these states. Here we show an example of this using a custom <code class="docutils literal notranslate"><span class="pre">StateVector</span></code>.</p>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Setup.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cirq</span>
+
+<span class="kn">import</span> <span class="nn">bgls</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="defining-a-custom-state">
+<h2>Defining a custom state<a class="headerlink" href="#defining-a-custom-state" title="Permalink to this heading">#</a></h2>
+<p>First we create a custom quantum state type to use with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code>, here a simple class for a state vector.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Define a custom quantum state representation to use with BGLS.&quot;&quot;&quot;</span>
+<span class="k">class</span> <span class="nc">StateVector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of a state vector.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a StateVector.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            num_qubits: Number of qubits in the state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span> <span class="o">=</span> <span class="n">num_qubits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">+</span> <span class="mf">0.</span><span class="n">j</span>
+    
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StateVector&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a copy of the StateVector.&quot;&quot;&quot;</span>
+        <span class="n">new_state</span> <span class="o">=</span> <span class="n">StateVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span>
+        <span class="n">new_state</span><span class="o">.</span><span class="n">vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_state</span>
+</pre></div>
+</div>
+</div>
+</div>
+<blockquote>
+<div><p>Note: The <code class="docutils literal notranslate"><span class="pre">copy</span></code> method is required to use with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code>.</p>
+</div></blockquote>
+<p>For example, we can instantiate and use this class as follows.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">state</span> <span class="o">=</span> <span class="n">StateVector</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">state</span><span class="o">.</span><span class="n">vector</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j])
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="defining-how-to-apply-ops">
+<h2>Defining how to <code class="docutils literal notranslate"><span class="pre">apply_op</span></code>s<a class="headerlink" href="#defining-how-to-apply-ops" title="Permalink to this heading">#</a></h2>
+<p>After defining a state, we need to be able to apply operations to it. Below we do this using matrix multiplication, first assuming matrices and vectors and then for Cirq operations acting on our <code class="docutils literal notranslate"><span class="pre">StateVector</span></code> above.</p>
+<blockquote>
+<div><p>Note: The details of how to apply matrix gates aren’t the important takeaway here, but rather how to plug this into <code class="docutils literal notranslate"><span class="pre">BGLS</span></code>. So, this cell can be safely skimmed. When defining your own <code class="docutils literal notranslate"><span class="pre">apply_op</span></code> function, you’d write the equivalent of the following cell.</p>
+</div></blockquote>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">apply_matrix_gate</span><span class="p">(</span><span class="n">gate</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target_bits</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies a matrix gate to a state.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        gate: The matrix of the gate to apply.</span>
+<span class="sd">        target_bits: The (qu)bits the gate acts on.</span>
+<span class="sd">        state: Wavefunction as a numpy array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">target_bits</span> <span class="o">=</span> <span class="n">target_bits</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># List of indices the gate is applied to.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">size</span>  <span class="c1"># For n qubits this is 2**n.</span>
+
+    <span class="c1"># Flag whether we have worked on a given index already</span>
+    <span class="n">already_applied</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">already_applied</span><span class="p">[</span><span class="n">l</span><span class="p">]:</span>
+            <span class="k">continue</span>
+        <span class="n">subspace_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">combo</span> <span class="ow">in</span> <span class="n">powerset</span><span class="p">(</span><span class="n">target_bits</span><span class="p">):</span>
+            <span class="c1"># E.g., [i0], [i1], [i0, i1], etc., one of these lists.</span>
+            <span class="k">if</span> <span class="n">combo</span><span class="p">:</span>  <span class="c1"># Ignore the empty element.</span>
+                <span class="n">tempidx</span> <span class="o">=</span> <span class="n">l</span>
+                <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">combo</span><span class="p">:</span>
+                    <span class="n">tempidx</span> <span class="o">=</span> <span class="n">flip_bit</span><span class="p">(</span><span class="n">tempidx</span><span class="p">,</span> <span class="n">bit</span><span class="p">)</span>
+                <span class="n">subspace_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tempidx</span><span class="p">)</span>
+
+        <span class="n">apply_op_to_subspace</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">subspace_indices</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">subspace_indices</span><span class="p">:</span>
+            <span class="n">already_applied</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="c1"># Helper functions for above.</span>
+<span class="k">def</span> <span class="nf">apply_op_to_subspace</span><span class="p">(</span><span class="n">gate</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies a matrix gate to a subspace.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gate: 2^q x 2^q numpy matrix, complex valued</span>
+<span class="sd">        state: 2^n numpy array, complex valued</span>
+<span class="sd">        indices: numpy array, integer valued, should be 2^q items in list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">gate</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">subspace</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">gate</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">subspace</span><span class="p">)</span>
+    <span class="n">state</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span>
+
+
+<span class="k">def</span> <span class="nf">powerset</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the powerset of an iterable.&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">flip_bit</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bit_to_flip</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an integer equal to `index` but with the `i`th bit of index flipped,</span>
+<span class="sd">    where `i` is `bit_to_flip`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        index: Integer to flip a bit of.</span>
+<span class="sd">        bit_to_flip: Index of the bit in `index` to flip.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">index</span> <span class="o">^</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit_to_flip</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can check that <code class="docutils literal notranslate"><span class="pre">apply_matrix_gate</span></code> works as intended for a simple Bell state preparation circuit.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">apply_matrix_gate</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">unitary</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="p">),</span> <span class="n">target_bits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;StateVector after H:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">)</span>
+
+<span class="n">apply_matrix_gate</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">unitary</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="p">),</span> <span class="n">target_bits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;StateVector after CNOT:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>StateVector after H:	 [0.70710678+0.j 0.70710678+0.j 0.        +0.j 0.        +0.j]
+StateVector after CNOT:	 [0.70710678+0.j 0.        +0.j 0.        +0.j 0.70710678+0.j]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we format this for <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> as follows.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">apply_op</span><span class="p">(</span><span class="n">op</span><span class="p">:</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Operation</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateVector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies the operation to the state, updating the state in place.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        op: Operation to apply to the wavefunction.</span>
+<span class="sd">        state: Wavefunction to apply the op to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">apply_matrix_gate</span><span class="p">(</span>
+        <span class="n">cirq</span><span class="o">.</span><span class="n">unitary</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">gate</span><span class="p">),</span> 
+        <span class="p">[</span><span class="n">q</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">qubits</span><span class="p">)],</span> 
+        <span class="n">state</span><span class="o">.</span><span class="n">vector</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="defining-how-to-compute-probability">
+<h2>Defining how to <code class="docutils literal notranslate"><span class="pre">compute_probability</span></code><a class="headerlink" href="#defining-how-to-compute-probability" title="Permalink to this heading">#</a></h2>
+<p>Last, we need to be able to compute the probability of any bitstring for the given state. We do this for the <code class="docutils literal notranslate"><span class="pre">StateVector</span></code> below by indexing.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compute_probability</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">StateVector</span><span class="p">,</span> <span class="n">bitstring</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the probability of samplign the bitstring in the given state.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        state: A </span>
+<span class="sd">        bitstring: </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">vector</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">bitstring</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">)])</span><span class="o">**</span><span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="using-with-bgls">
+<h2>Using with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code><a class="headerlink" href="#using-with-bgls" title="Permalink to this heading">#</a></h2>
+<p>We can now use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> with our custom <code class="docutils literal notranslate"><span class="pre">StateVector</span></code> state, <code class="docutils literal notranslate"><span class="pre">apply_op</span></code> function, and <code class="docutils literal notranslate"><span class="pre">compute_probability</span></code> function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Using the custom state with BGLS.&quot;&quot;&quot;</span>
+<span class="c1"># Example circuit to run.</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">a</span><span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Create a BGLS simulator with the custom state.</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">initial_state</span><span class="o">=</span><span class="n">StateVector</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">apply_op</span><span class="o">=</span><span class="n">apply_op</span><span class="p">,</span>
+    <span class="n">compute_probability</span><span class="o">=</span><span class="n">compute_probability</span>
+<span class="p">)</span>
+
+<span class="c1"># Run the circuit.</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">plot_state_histogram</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/29de71bc0433c460679e395d201bc8e495c54a803bf1f861f74acb414acdc75a.png" src="_images/29de71bc0433c460679e395d201bc8e495c54a803bf1f861f74acb414acdc75a.png" />
+</div>
+</div>
+<p>Note the returned results are formatted as usual for any Cirq circuit and the custom simulator supports all <a class="reference internal" href="features.html"><span class="doc std std-doc">features supported by <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></span></a>.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="features.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Features</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="when_to_use.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Alex Shapiro, Ryan LaRose
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Using custom states with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a><ul>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#defining-a-custom-state">Defining a custom state</a></li>
+<li><a class="reference internal" href="#defining-how-to-apply-ops">Defining how to <code class="docutils literal notranslate"><span class="pre">apply_op</span></code>s</a></li>
+<li><a class="reference internal" href="#defining-how-to-compute-probability">Defining how to <code class="docutils literal notranslate"><span class="pre">compute_probability</span></code></a></li>
+<li><a class="reference internal" href="#using-with-bgls">Using with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    </body>
+</html>

@@ -1,0 +1,326 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Getting started"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "`BGLS` is a Python package that implements the **B**ravyi, **G**osset, and **L**iu **S**ampling algorithm presented in *How to simulate quantum measurement without computing marginals ([Phys. Rev. Lett.](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.128.220503)) ([arXiv](https://arxiv.org/abs/2112.08499))*."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Quick start"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Install `BGLS` via `pip install bgls`. The following example shows how to use the package."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\"\"\"Setup.\"\"\"\n",
+    "import cirq\n",
+    "\n",
+    "import bgls"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"overflow: auto; white-space: pre;\">0: ───H───@───M(&#x27;z&#x27;)───\n",
+       "          │   │\n",
+       "1: ───────X───M────────</pre>"
+      ],
+      "text/plain": [
+       "0: ───H───@───M('z')───\n",
+       "          │   │\n",
+       "1: ───────X───M────────"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"\"\"Define a circuit.\"\"\"\n",
+    "nqubits = 2\n",
+    "qubits = cirq.LineQubit.range(nqubits)\n",
+    "\n",
+    "circuit = cirq.Circuit(\n",
+    "    cirq.H.on(qubits[0]),\n",
+    "    cirq.CNOT.on(qubits[0], qubits[1]),\n",
+    "    cirq.measure(*qubits, key=\"z\")\n",
+    ")\n",
+    "circuit"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/ryan/prof/work/bgls/envbgls/lib/python3.10/site-packages/cirq/vis/state_histogram.py:103: UserWarning: Matplotlib is currently using module://matplotlib_inline.backend_inline, which is a non-GUI backend, so cannot show the figure.\n",
+      "  fig.show()\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAioAAAHHCAYAAACRAnNyAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjcuMiwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy8pXeV/AAAACXBIWXMAAA9hAAAPYQGoP6dpAAAvo0lEQVR4nO3deXyM98L///cgGZG1llhDbLVUBbGcoPZQbRWtLqpHpLo5US2l5Xafou42qlXRcuP0bi2tHA49ltPFWktLaYRoaa21xBqUhCBIru8f/ZmfaaIyMXF98Ho+HvOo+VzXXNfbNefIO9f1uWYclmVZAgAAMFARuwMAAABcC0UFAAAYi6ICAACMRVEBAADGoqgAAABjUVQAAICxKCoAAMBYFBUAAGAsigoAADAWRQW4DTgcDo0cOdLuGLccjhtgPooKcB3Tp0+Xw+FwPYoVK6aKFSuqT58+OnTokN3x8rRu3TqNHDlSp0+fzvdr/vOf/6h169YKDQ1ViRIlVK1aNT3++ONavHixa53Dhw9r5MiRSklJKXC2r776qlDKwciRI+VwOHTixIk8l4eHh+uhhx664f0kJiYqISHhhrcDIH8oKkA+vfnmm/r00081ZcoUde7cWZ999plat26tCxcu2B0tl3Xr1mnUqFH5LirvvfeeHn74YTkcDg0bNkzjx4/Xo48+ql27dmn27Nmu9Q4fPqxRo0bdcFEZNWpUgV/vTefPn9d///d/e/QaigpwcxWzOwBwq+jcubMaN24sSXr22WdVunRpvfPOO1q0aJEef/xxm9MV3OXLlzV69GhFR0dr6dKluZanpaXZkOrmKF68uN0RPJaZmSl/f3+7YwA3DWdUgAK67777JEl79uxxG9++fbt69OihkiVLqnjx4mrcuLEWLVrkts6lS5c0atQo1axZU8WLF1epUqXUsmVLLVu2zLVOmzZt1KZNm1z77dOnj8LDw6+Za+TIkRoyZIgkqWrVqq5LVvv27ctz/RMnTigjI0MtWrTIc3loaKgkadWqVWrSpIkkKTY21rXd6dOnS5K+/fZbPfbYY6pcubKcTqfCwsI0cOBAnT9/3i37pEmTJMntctoVOTk5SkhI0D333KPixYurbNmyeuGFF3Tq1Klr/n1vxB/nqJw5c0avvPKKwsPD5XQ6FRoaqujoaG3atEnS7+/Jl19+qf3797uyX/1epKWlqW/fvipbtqyKFy+uiIgIzZgxI9d+T548qb/+9a8KCgpSSEiIYmJitGXLFrfjKf1+vAICArRnzx498MADCgwMVK9evSTl73hfvY0DBw7ooYceUkBAgCpWrOh6H3766Se1a9dO/v7+qlKlihITE710dAHv4IwKUEBXfvDfddddrrFt27apRYsWqlixooYOHSp/f3/961//Urdu3fT555+re/fukn4vE/Hx8Xr22WfVtGlTZWRkaOPGjdq0aZOio6NvKNcjjzyinTt36p///KfGjx+v0qVLS5LKlCmT5/qhoaHy8/PTf/7zH7300ksqWbJknuvVqVNHb775pt544w09//zzrqLWvHlzSdLcuXN17tw59evXT6VKldIPP/ygDz/8UAcPHtTcuXMlSS+88IIOHz6sZcuW6dNPP821jxdeeEHTp09XbGysBgwYoL1792rixInavHmz1q5dKx8fn+v+/X/77bc8x3Nycq772hdffFHz5s1T//79VbduXZ08eVLfffedfvnlFzVq1EjDhw9Xenq6Dh48qPHjx0uSAgICJP1+GalNmzbavXu3+vfvr6pVq2ru3Lnq06ePTp8+rZdfftmVo0uXLvrhhx/Ur18/1a5dWwsXLlRMTEyemS5fvqxOnTqpZcuWeu+991SiRAlJ+TveV2RnZ6tz585q1aqVxo4dq1mzZql///7y9/fX8OHD1atXLz3yyCOaMmWKevfuraioKFWtWvW6xwu4KSwAf2ratGmWJGv58uXW8ePHrdTUVGvevHlWmTJlLKfTaaWmprrWbd++vXXvvfdaFy5ccI3l5ORYzZs3t2rWrOkai4iIsB588ME/3W/r1q2t1q1b5xqPiYmxqlSp4jYmyRoxYoTr+bvvvmtJsvbu3Zuvv+Mbb7xhSbL8/f2tzp07W2+99ZaVnJyca72kpCRLkjVt2rRcy86dO5drLD4+3nI4HNb+/ftdY3FxcVZe//R8++23liRr1qxZbuOLFy/Oc/yPRowYYUn608cfj/kfj1twcLAVFxf3p/t58MEHcx1/y7KshIQES5L12WefucYuXrxoRUVFWQEBAVZGRoZlWZb1+eefW5KshIQE13rZ2dlWu3btch3bmJgYS5I1dOjQXPvL7/G+so23337bNXbq1CnLz8/Pcjgc1uzZs13j27dvz3VMALtx6QfIpw4dOqhMmTIKCwtTjx495O/vr0WLFqlSpUqSfv9N/ptvvtHjjz+uM2fO6MSJEzpx4oROnjypTp06adeuXa67hEJCQrRt2zbt2rXLzr+Sy6hRo5SYmKiGDRtqyZIlGj58uCIjI9WoUSP98ssv+dqGn5+f68+ZmZk6ceKEmjdvLsuytHnz5uu+fu7cuQoODlZ0dLTr2J04cUKRkZEKCAjQypUr85Xj888/17Jly3I9ypYte93XhoSEaMOGDTp8+HC+9nW1r776SuXKlVPPnj1dYz4+PhowYIDOnj2r1atXS5IWL14sHx8fPffcc671ihQpori4uGtuu1+/frnGPD3ezz77rOvPISEhqlWrlvz9/d3mV9WqVUshISH69ddf8/m3Bgofl36AfJo0aZLuvvtupaen65NPPtGaNWvkdDpdy3fv3i3LsvT3v/9df//73/PcRlpamipWrKg333xTXbt21d1336169erp/vvv11//+lfVr1//Zv11cunZs6d69uypjIwMbdiwQdOnT1diYqK6dOmirVu3Xnfi6YEDB/TGG29o0aJFueaUpKenX3f/u3btUnp6umtOzB/ld1Jvq1atXJe7rpafibNjx45VTEyMwsLCFBkZqQceeEC9e/dWtWrVrvva/fv3q2bNmipSxP33vzp16riWX/lv+fLlXZdwrqhRo0ae2y1WrJirDF/Nk+NdvHjxXJf+goODValSJbc5QlfGC2tOEFAQFBUgn5o2beq666dbt25q2bKlnnrqKe3YsUMBAQGuORCDBw9Wp06d8tzGlR9GrVq10p49e7Rw4UItXbpU//d//6fx48drypQprt98HQ6HLMvKtY3s7OzC+Ou5BAUFKTo6WtHR0fLx8dGMGTO0YcMGtW7d+pqvyc7OVnR0tH777Te9/vrrql27tvz9/XXo0CH16dMnX/NDcnJyFBoaqlmzZuW5/FpzbLzp8ccf13333af58+dr6dKlevfdd/XOO+/o3//+tzp37lzo+8+L0+nMVX48Pd5FixbNc9vXGs/rf3eAXSgqQAEULVpU8fHxatu2rSZOnKihQ4e6fuv28fFRhw4drruNkiVLKjY2VrGxsTp79qxatWqlkSNHuorKXXfdlecp+Cu/mf+ZP/6WXFCNGzfWjBkzdOTIkT/d7k8//aSdO3dqxowZ6t27t2v86ruYrpetevXqWr58uVq0aOF2WeNmK1++vP72t7/pb3/7m9LS0tSoUSO99dZbrqJyrfxVqlTRjz/+qJycHLdisX37dtfyK/9duXKlzp0753ZWZffu3fnO6MnxBm51zFEBCqhNmzZq2rSpEhISdOHCBYWGhqpNmzaaOnWq6wf71Y4fP+7688mTJ92WBQQEqEaNGsrKynKNVa9eXdu3b3d73ZYtW7R27drrZrvyORv5+cC3c+fO6fvvv89z2ddffy3p97kLf7bdK7+ZX/2buGVZmjBhQr6zPf7448rOztbo0aNzveby5csefcpuQWRnZ+e6ZBIaGqoKFSq4vS/+/v55Xsp64IEHdPToUc2ZM8c1dvnyZX344YcKCAhwnZHq1KmTLl26pI8++si1Xk5Ojut24fzw5HgDtzrOqAA3YMiQIXrsscc0ffp0vfjii5o0aZJatmype++9V88995yqVaumY8eO6fvvv9fBgwe1ZcsWSVLdunXVpk0bRUZGqmTJktq4caPrttgrnnnmGb3//vvq1KmT+vbtq7S0NE2ZMkX33HOPMjIy/jRXZGSkJGn48OF68skn5ePjoy5duuT5QWHnzp1T8+bN9Ze//EX333+/wsLCdPr0aS1YsEDffvutunXrpoYNG0r6vTyFhIRoypQpCgwMlL+/v5o1a6batWurevXqGjx4sA4dOqSgoCB9/vnnec51uJJtwIAB6tSpk4oWLaonn3xSrVu31gsvvKD4+HilpKSoY8eO8vHx0a5duzR37lxNmDBBPXr0KNgblQ9nzpxRpUqV1KNHD0VERCggIEDLly9XUlKSxo0b55Z/zpw5GjRokJo0aaKAgAB16dJFzz//vKZOnao+ffooOTlZ4eHhmjdvntauXauEhAQFBgZK+v2yYdOmTfXqq69q9+7dql27thYtWuS6rTo/Z8M8Od7ALc+2+42AW8SV25OTkpJyLcvOzraqV69uVa9e3bp8+bJlWZa1Z88eq3fv3la5cuUsHx8fq2LFitZDDz1kzZs3z/W6//mf/7GaNm1qhYSEWH5+flbt2rWtt956y7p48aLb9j/77DOrWrVqlq+vr9WgQQNryZIl+bo92bIsa/To0VbFihWtIkWK/OmtypcuXbI++ugjq1u3blaVKlUsp9NplShRwmrYsKH17rvvWllZWW7rL1y40Kpbt65VrFgxt9tpf/75Z6tDhw5WQECAVbp0aeu5556ztmzZkuuW28uXL1svvfSSVaZMGcvhcOS6Vfkf//iHFRkZafn5+VmBgYHWvffea7322mvW4cOH88x/xZXbk48fP57n8ipVqvzp7clZWVnWkCFDrIiICCswMNDy9/e3IiIirP/93/91e83Zs2etp556ygoJCbEkub0Xx44ds2JjY63SpUtbvr6+1r333pvnrdzHjx+3nnrqKSswMNAKDg62+vTpY61du9aS5Ha7cExMjOXv75/n3ye/x/ta22jdurV1zz335Os4AXZyWBazpgDAbgsWLFD37t313XffXfNTgoE7EUUFAG6y8+fPu00Yzs7OVseOHbVx40YdPXrU1snEgGmYowIAN9lLL72k8+fPKyoqSllZWfr3v/+tdevW6e2336akAH/AGRUAuMkSExM1btw47d69WxcuXFCNGjXUr18/t8nUAH5HUQEAAMbic1QAAICxKCoAAMBYt/Rk2pycHB0+fFiBgYFe+8hwAABQuCzL0pkzZ1ShQoVc32X1R7d0UTl8+LDCwsLsjgEAAAogNTU1z28Hv9otXVSufCR1amqqgoKCbE4DAADyIyMjQ2FhYa6f43/mli4qVy73BAUFUVQAALjF5GfaBpNpAQCAsSgqAADAWBQVAABgLIoKAAAwFkUFAAAYi6ICAACMRVEBAADGoqgAAABjUVQAAICxKCoAAMBYtheVQ4cO6emnn1apUqXk5+ene++9Vxs3brQ7FgAAMICt3/Vz6tQptWjRQm3bttXXX3+tMmXKaNeuXbrrrrvsjAUAAAxha1F55513FBYWpmnTprnGqlatamMiAABgElsv/SxatEiNGzfWY489ptDQUDVs2FAfffSRnZEAAIBBbC0qv/76qyZPnqyaNWtqyZIl6tevnwYMGKAZM2bkuX5WVpYyMjLcHgAA4PblsCzLsmvnvr6+aty4sdatW+caGzBggJKSkvT999/nWn/kyJEaNWpUrvH09HQFBQV5PV/40C+9vk3kz74xD9odAQBQSDIyMhQcHJyvn9+2nlEpX7686tat6zZWp04dHThwIM/1hw0bpvT0dNcjNTX1ZsQEAAA2sXUybYsWLbRjxw63sZ07d6pKlSp5ru90OuV0Om9GNAAAYABbz6gMHDhQ69ev19tvv63du3crMTFR//jHPxQXF2dnLAAAYAhbi0qTJk00f/58/fOf/1S9evU0evRoJSQkqFevXnbGAgAAhrD1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vqpRo4YkKTIyUklJSZowYYKmTp2aa91hw4Zp0KBBrucZGRmUFQAAbmP5Kirjx4/P18YcDofHReWPcnJy3C7vXM3pdMrpdN7Q9gEAwK0jX0Vl7969hbLzYcOGqXPnzqpcubLOnDmjxMRErVq1SkuWLCmU/QEAgFtLgb492VvS0tLUu3dvHTlyRMHBwapfv76WLFmi6OhoO2MBAABDeFxUnnnmmT9d/sknn+R7Wx9//LGnuwcAAHcQj4vKqVOn3J5funRJW7du1enTp9WuXTuvBQMAAPC4qMyfPz/XWE5Ojvr166fq1at7JRQAAIDkpW9PLlKkiAYNGpTvu4MAAADywytFRZL27Nmjy5cve2tzAAAAnl/6ufoD1yTJsiwdOXJEX375Za7vAAIAALgRHheVzZs3uz0vUqSIypQpo3Hjxl33jiAAAABPeFxUVq5cWRg5AAAAcvF4jsr58+d17tw51/P9+/crISFBS5cu9WowAAAAj4tK165dNXPmTEnS6dOn1bRpU40bN05du3bV5MmTvR4QAADcuTwuKps2bdJ9990nSZo3b57KlSun/fv3a+bMmR59yzIAAMD1eFxUzp07p8DAQEnS0qVL9cgjj6hIkSL6y1/+ov3793s9IAAAuHN5XFRq1KihBQsWKDU1VUuWLFHHjh0l/f4Fg0FBQV4PCAAA7lweF5U33nhDgwcPVnh4uJo2baqoqChJv59dadiwodcDAgCAO5fHtyf36NFDLVu21JEjRxQREeEab9++vbp37+7VcAAA4M5WoI/QL1eunAIDA7Vs2TKdP39ektSkSRPVrl3bq+EAAMCdzeOicvLkSbVv31533323HnjgAR05ckSS1LdvX7366qteDwgAAO5cHheVgQMHysfHRwcOHFCJEiVc40888YQWL17s1XAAAODO5vEclaVLl2rJkiWqVKmS23jNmjW5PRkAAHiVx2dUMjMz3c6kXPHbb7/J6XR6JRQAAIBUgKJy3333uT5CX5IcDodycnI0duxYtW3b1qvhAADAnc3jSz9jx45V+/bttXHjRl28eFGvvfaatm3bpt9++01r164tjIwAAOAO5fEZlXr16mnnzp1q2bKlunbtqszMTD3yyCPavHmzqlevXhgZAQDAHcqjMyqXLl3S/fffrylTpmj48OGFlQkAAECSh2dUfHx89OOPPxZWFgAAADceX/p5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",
+      "text/plain": [
+       "<Figure size 640x480 with 1 Axes>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "\"\"\"Use BGLS to simulate the circuit.\"\"\"\n",
+    "simulator = bgls.Simulator(\n",
+    "    initial_state=cirq.StateVectorSimulationState(qubits=qubits, initial_state=0),\n",
+    "    apply_op=cirq.protocols.act_on,\n",
+    "    compute_probability=bgls.born.compute_probability_state_vector,\n",
+    ")\n",
+    "results = simulator.run(circuit, repetitions=10)\n",
+    "\n",
+    "cirq.plot_state_histogram(results);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## More detail: How to create a `bgls.Simulator`"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Notice from the above example that there are three ingredients needed to create a `bgls.Simulator`:\n",
+    "\n",
+    "1. `initial_state`: The initial quantum state (wavefunction) of the circuit, including what type the wavefunction is (state vector, density matrix, tensor network, etc.).\n",
+    "1. `apply_op`: A function for applying operations to the initial (and intermediate) states.\n",
+    "1. `compute_probability`: A function for calculating the probability of sampling a bitstring from the input state type."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> **Note**: A function to compute marginal distributions, which is used in the typical \"qubit-by-qubit\" sampling algorithm, is not needed. This is the primary purpose of the BGLS \"gate-by-gate\" sampling algorithm: when it is easier to compute probabilities than it is to compute marginal distributions, the BGLS algorithm is advantageous to use. See more in [How `BGLS` works](./how_it_works.ipynb) and [When to use `BGLS`](./when_to_use.ipynb)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Any wavefunction type can be used with `BGLS`. In the example above, we used a `cirq.StateVectorSimulationState` which represents the wavefunction as a state vector."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j], dtype=complex64)"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"\"\"Provide a representation of the (initial) wavefunction, here a cirq.StateVectorSimulationState.\"\"\"\n",
+    "wavefunction = cirq.StateVectorSimulationState(qubits=qubits, initial_state=0)\n",
+    "\n",
+    "# Visualize the wavefunction.\n",
+    "wavefunction.target_tensor.reshape(2 ** nqubits)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Once the state is provided, `BGLS` needs to know how to apply operations to the state. Here, we can do this with `cirq.protocols.act_on`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([ 0.707+0.j,  0.   +0.j,  0.707+0.j, -0.   +0.j], dtype=complex64)"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"\"\"Define a function for applying operations to the state.\"\"\"\n",
+    "from typing import Any\n",
+    "\n",
+    "\n",
+    "def apply_op(operation: cirq.GateOperation, state: cirq.StateVectorSimulationState) -> None:\n",
+    "    cirq.protocols.act_on(operation, state)\n",
+    "\n",
+    "\n",
+    "# Example: Apply operation and visualize the updated wavefunction.\n",
+    "apply_op(cirq.H.on(qubits[0]), wavefunction)\n",
+    "wavefunction.target_tensor.reshape(2 ** nqubits).round(3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Note: The `apply_op` function must modify the `state` in-place as above."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Last, `BGLS` needs to know how to compute the probability of sampling a bitstring `z` from the `wavefunction` $|\\psi\\rangle$. Here this is given by $| \\langle z | \\psi \\rangle | ^ 2$ and can be computed via the following function."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Probability of sampling 00 is 0.50\n",
+      "Probability of sampling 10 is 0.50\n"
+     ]
+    }
+   ],
+   "source": [
+    "\"\"\"Define a function for computing the probability of sampling a bitstring.\"\"\"\n",
+    "import numpy as np\n",
+    "\n",
+    "\n",
+    "def probability_of_bitstring(\n",
+    "    wavefunction: cirq.StateVectorSimulationState,\n",
+    "    bitstring: str,\n",
+    ") -> float:\n",
+    "    return np.abs(wavefunction.target_tensor.reshape(2 ** nqubits)[int(bitstring, 2)]) ** 2\n",
+    "\n",
+    "\n",
+    "# Example: Calculating some p(z) for some bitstrings z.\n",
+    "for bitstring in {\"00\", \"10\"}:\n",
+    "    print(f\"Probability of sampling {bitstring} is {probability_of_bitstring(wavefunction, bitstring):.2f}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Note: This function is identical to `bgls.born.compute_probability_state_vector` used in the Quick start example."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "With these three ingredients you can create a `bgls.Simulator` and execute circuits with `bgls.Simulator.run`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "z=0, 0"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "simulator = bgls.Simulator(wavefunction, apply_op, probability_of_bitstring)\n",
+    "\n",
+    "simulator.run(circuit)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## When to use the `bgls.Simulator`"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Other than introducing the `bgls.Simulator`, there's (probably) no good reason to use `BGLS` with a statevector simulator as above: the samples can be drawn from the final state just as easily. The power of the `bgls.Simulator` comes in situations where it is easier to compute probabilities than compute marginal distributions - see [When to use `BGLS`](./when_to_use.ipynb) for more discussion and examples."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "envbgls",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.6"
+  },
+  "orig_nbformat": 4
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

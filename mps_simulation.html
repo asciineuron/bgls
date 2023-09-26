@@ -1,0 +1,786 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Using BGLS with MPS to solve QAOA problems" href="qaoa_example.html" /><link rel="prev" title="Using BGLS on Clifford and near-Clifford circuits" href="clifford_simulation.html" />
+
+    <!-- Generated with Sphinx 5.3.0 and Furo 2023.03.27 -->
+        <title>Using BGLS to sample from Matrix Product State Circuits - BGLS documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">BGLS  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">BGLS  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_to_use.html">When to use <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="using_custom_states.html">Using custom states with <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_it_works.html">How <code class="docutils literal notranslate"><span class="pre">BGLS</span></code> works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips for using <code class="docutils literal notranslate"><span class="pre">BGLS</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="clifford_simulation.html">Using BGLS on Clifford and near-Clifford circuits</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Using BGLS to sample from Matrix Product State Circuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qaoa_example.html">Using BGLS with MPS to solve QAOA problems</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section class="tex2jax_ignore mathjax_ignore" id="using-bgls-to-sample-from-matrix-product-state-circuits">
+<h1>Using BGLS to sample from Matrix Product State Circuits<a class="headerlink" href="#using-bgls-to-sample-from-matrix-product-state-circuits" title="Permalink to this heading">#</a></h1>
+<p>Here we will explore working with matrix product states (mps) using cirq’s quimb-based MPSState class.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">cirq</span>
+<span class="kn">import</span> <span class="nn">cirq.contrib.quimb</span> <span class="k">as</span> <span class="nn">ccq</span>
+<span class="kn">import</span> <span class="nn">cirq.contrib.quimb.mps_simulator</span>
+
+<span class="kn">import</span> <span class="nn">quimb.tensor</span> <span class="k">as</span> <span class="nn">qtn</span>
+
+<span class="kn">import</span> <span class="nn">bgls</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Exception ignored on calling ctypes callback function: &lt;function ExecutionEngine._raw_object_cache_notify at 0x7f4195bd20c0&gt;
+Traceback (most recent call last):
+  File &quot;/opt/hostedtoolcache/Python/3.11.5/x64/lib/python3.11/site-packages/llvmlite/binding/executionengine.py&quot;, line 171, in _raw_object_cache_notify
+    def _raw_object_cache_notify(self, data):
+
+KeyboardInterrupt: 
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cirq_mps_bitstring_probability</span><span class="p">(</span>
+    <span class="n">mps</span><span class="p">:</span> <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">,</span> <span class="n">bitstring</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the probability of measuring the `bitstring` (|z⟩) in the</span>
+<span class="sd">    &#39;cirq.contrib.quimb.MPSState&#39; mps.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        mps: Matrix Product State as a &#39;cirq.contrib.quimb.MPSState&#39;.</span>
+<span class="sd">        bitstring: Bitstring |z⟩ as a binary string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">M_subset</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">Ai</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mps</span><span class="o">.</span><span class="n">M</span><span class="p">):</span>
+        <span class="n">qubit_index</span> <span class="o">=</span> <span class="n">mps</span><span class="o">.</span><span class="n">i_str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="c1"># selecting the component with matching bitstring:</span>
+        <span class="n">A_subset</span> <span class="o">=</span> <span class="n">Ai</span><span class="o">.</span><span class="n">isel</span><span class="p">({</span><span class="n">qubit_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">bitstring</span><span class="p">[</span><span class="n">i</span><span class="p">])})</span>
+        <span class="n">M_subset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A_subset</span><span class="p">)</span>
+
+    <span class="n">tensor_network</span> <span class="o">=</span> <span class="n">qtn</span><span class="o">.</span><span class="n">TensorNetwork</span><span class="p">(</span><span class="n">M_subset</span><span class="p">)</span>
+    <span class="n">state_vector</span> <span class="o">=</span> <span class="n">tensor_network</span><span class="o">.</span><span class="n">contract</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">state_vector</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To begin, we note that the state of n qubits can be represented as a matrix product state as per: <span class="math notranslate nohighlight">\(|\Psi&gt; = \sum_{\{s\}}Tr[A_1^{s_1}...A_n^{s_n}]|s_1...s_n&gt;\)</span>, where <span class="math notranslate nohighlight">\(s_i=0,1\)</span>. In particular, each <span class="math notranslate nohighlight">\(A_i^{s_i}\)</span> is of order <span class="math notranslate nohighlight">\(\chi\)</span> that scales with the entanglement of the system. Retrieving information about the state e.g. bitstring amplitudes involves contraction of these tensors, hence this representation is most advantageous in cases of low/local entanglement.</p>
+<p>We can create a cirq circuit and visualize it as a tensor network as follows. We take the example at https://quimb.readthedocs.io/en/latest/tensor-circuit.html#simulation-steps and use a large GHZ circuit with randomly sequenced CNOTs:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">size</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">qs</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+<span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">:</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+
+<span class="n">circuit</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="overflow: auto; white-space: pre;">0: ───H───@───@───@───@───@───@───@───
+          │   │   │   │   │   │   │
+1: ───────┼───┼───┼───┼───X───┼───┼───
+          │   │   │   │       │   │
+2: ───────┼───┼───X───┼───────┼───┼───
+          │   │       │       │   │
+3: ───────X───┼───────┼───────┼───┼───
+              │       │       │   │
+4: ───────────┼───────┼───────X───┼───
+              │       │           │
+5: ───────────┼───────X───────────┼───
+              │                   │
+6: ───────────┼───────────────────X───
+              │
+7: ───────────X───────────────────────</pre></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert to tensor network:</span>
+<span class="n">tensors</span><span class="p">,</span> <span class="n">qubit_frontier</span><span class="p">,</span> <span class="n">fix</span> <span class="o">=</span> <span class="n">ccq</span><span class="o">.</span><span class="n">circuit_to_tensors</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">tn</span> <span class="o">=</span> <span class="n">qtn</span><span class="o">.</span><span class="n">TensorNetwork</span><span class="p">(</span><span class="n">tensors</span><span class="p">)</span>
+<span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;Q</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="n">tn</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">fix</span><span class="o">=</span><span class="n">fix</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/f817f151cea80b6dbbba939b18e4f0160ede6ab96ef9fb7624b14e6e34196bdb.png" src="_images/f817f151cea80b6dbbba939b18e4f0160ede6ab96ef9fb7624b14e6e34196bdb.png" />
+</div>
+</div>
+<p>Following the discussion at https://github.com/quantumlib/Cirq/blob/master/cirq-core/cirq/contrib/quimb/Cirq-to-Tensor-Networks.ipynb we can read this representation of the state vector as follows: Qi represent i-qubit operations, and Q0 represent the qubits, in their initial <span class="math notranslate nohighlight">\(|0&gt;\)</span> state. Open legs represent components of the state vector, and for <span class="math notranslate nohighlight">\(ij\_ qq(l)\)</span> represent the lth component. Thus we see the number of Q0 match the number of qubits present, and can read the network from left to right. We first apply the 1-qubit Hadamard in orange to the first qubit, and then sequentially apply each 2-qubit CNOT between it and the remaining qubits. Once we have incorporated each qubit it is no longer used, and its component of the state vector becomes available. Finally after entangling with all qubits, the first qubit’s state vector component emerges as well.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tn2</span> <span class="o">=</span> <span class="n">tn</span><span class="o">.</span><span class="n">contract</span><span class="p">()</span>
+<span class="n">tn2</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">fix</span><span class="o">=</span><span class="n">fix</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/3c28a91ab0bf08ec02adaaeff189d0b97d4f070d0d24e58346b051a0043f4904.png" src="_images/3c28a91ab0bf08ec02adaaeff189d0b97d4f070d0d24e58346b051a0043f4904.png" />
+</div>
+</div>
+<p>We see above that contracting this circuit makes available all components of the state vector, and is the equivalent of fully simulating the circuit.</p>
+<p>Now we begin working with cirq’s MPSState class which integrates this into native cirq circuits. We can recreate this by initializing such a state, and using cirq.act_on for each subsequent gate as follows. Here the backend uses a simplified representation for display, with <span class="math notranslate nohighlight">\(i_j\)</span> representing the jth qubit state vector component, and nodes representing gates. Again we first act on <span class="math notranslate nohighlight">\(i_0\)</span> and then subsequentely between it and each other qubit.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mps_state</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">)</span>
+<span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">circuit</span><span class="o">.</span><span class="n">all_operations</span><span class="p">():</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mps_state</span><span class="p">)</span>
+
+<span class="n">mps_tn</span> <span class="o">=</span> <span class="n">qtn</span><span class="o">.</span><span class="n">TensorNetwork</span><span class="p">(</span><span class="n">mps_state</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+<span class="n">mps_tn</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">contracted</span> <span class="o">=</span> <span class="n">mps_tn</span><span class="o">.</span><span class="n">contract</span><span class="p">()</span>
+<span class="n">contracted</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/541d2f3b5f9983f84db3d49be03d2d35f3c6756419fc9f70bac408b016848b4e.png" src="_images/541d2f3b5f9983f84db3d49be03d2d35f3c6756419fc9f70bac408b016848b4e.png" />
+<img alt="_images/b75d9ce00f2b87f73305373c86006183e18e3cffc3911adc592ba8108713d8f9.png" src="_images/b75d9ce00f2b87f73305373c86006183e18e3cffc3911adc592ba8108713d8f9.png" />
+</div>
+</div>
+<p>The primary thing we need to determine from such a MPSState to use in BGLS is the amplitudes at a given step for various bitstrings. We can examine the list of tensors in the MPS representation through its property <span class="math notranslate nohighlight">\(M\)</span>. We make the following observations. The number of tensors is equal to the number of qubits in the circuit. Each tensor’s first dimension is 2; this represents the 2 basis components of qubits, i.e. <span class="math notranslate nohighlight">\(|0&gt;, |1&gt;\)</span>. Then for each qubit, every time it is entangled with another gate via a 2-qubit gate, it gains another size 2 dimension. Hence each peripheral qubit is entangled once and has a single additional axis, whereas the first qubit has an extra axis for each qubit it was entangled with.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mps_state</span><span class="o">.</span><span class="n">M</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[Tensor(shape=(2, 2, 2, 2, 2, 2, 2, 2), inds=(&#39;mu_0_3&#39;, &#39;mu_0_1&#39;, &#39;mu_0_5&#39;, &#39;mu_0_2&#39;, &#39;mu_0_7&#39;, &#39;mu_0_4&#39;, &#39;i_0&#39;, &#39;mu_0_6&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_1&#39;, &#39;i_1&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_2&#39;, &#39;i_2&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_3&#39;, &#39;i_3&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_4&#39;, &#39;i_4&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_5&#39;, &#39;i_5&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_6&#39;, &#39;i_6&#39;), tags=oset([])),
+ Tensor(shape=(2, 2), inds=(&#39;mu_0_7&#39;, &#39;i_7&#39;), tags=oset([]))]
+</pre></div>
+</div>
+</div>
+</div>
+<p>A naive technique to compute bitstring amplitudes would be to fully contract the tensor network as per the <code class="docutils literal notranslate"><span class="pre">MPSState.state_vector()</span></code> function. However, a major insight is that, by specifying the bitstring, at each qubit we can eliminate the first axis, depending on whether that qubit’s corresponding bitstring is 0 or 1, leading to an exponential speedup of the requisite tensor contraction. This makes up the core of our <code class="docutils literal notranslate"><span class="pre">cirq_mps_bitstring_probability()</span></code> function, as we can see below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># e.g. bitstring &quot;11111111&quot; for the above</span>
+<span class="n">bitstring</span> <span class="o">=</span> <span class="s2">&quot;11111111&quot;</span>
+<span class="n">M_subset</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">Ai</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mps_state</span><span class="o">.</span><span class="n">M</span><span class="p">):</span>
+    <span class="n">qubit_index</span> <span class="o">=</span> <span class="n">mps_state</span><span class="o">.</span><span class="n">i_str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="c1"># selecting the component with matching bitstring:</span>
+    <span class="n">A_subset</span> <span class="o">=</span> <span class="n">Ai</span><span class="o">.</span><span class="n">isel</span><span class="p">({</span><span class="n">qubit_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">bitstring</span><span class="p">[</span><span class="n">i</span><span class="p">])})</span>
+    <span class="n">M_subset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A_subset</span><span class="p">)</span>
+<span class="n">M_subset</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[Tensor(shape=(2, 2, 2, 2, 2, 2, 2), inds=(&#39;mu_0_3&#39;, &#39;mu_0_1&#39;, &#39;mu_0_5&#39;, &#39;mu_0_2&#39;, &#39;mu_0_7&#39;, &#39;mu_0_4&#39;, &#39;mu_0_6&#39;), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_1&#39;,), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_2&#39;,), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_3&#39;,), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_4&#39;,), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_5&#39;,), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_6&#39;,), tags=oset([])),
+ Tensor(shape=(2,), inds=(&#39;mu_0_7&#39;,), tags=oset([]))]
+</pre></div>
+</div>
+</div>
+</div>
+<p>To get the amplitude we then follow the <code class="docutils literal notranslate"><span class="pre">state_vector()</span></code> functionality, and turn this list into a tensor network and contract. Because of the above, this now yields a scalar rather than a full tensor. For the <span class="math notranslate nohighlight">\(0...0\)</span> and <span class="math notranslate nohighlight">\(1...1\)</span> bitstrings we expect probability <span class="math notranslate nohighlight">\(1/2\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M_tn</span> <span class="o">=</span> <span class="n">qtn</span><span class="o">.</span><span class="n">TensorNetwork</span><span class="p">(</span><span class="n">M_subset</span><span class="p">)</span>
+<span class="n">M_amp</span> <span class="o">=</span> <span class="n">M_tn</span><span class="o">.</span><span class="n">contract</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">M_amp</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.4999999999999998
+</pre></div>
+</div>
+</div>
+</div>
+<section id="running-on-bgls">
+<h2>Running on BGLS<a class="headerlink" href="#running-on-bgls" title="Permalink to this heading">#</a></h2>
+<p>Sampling now looks the same as with any other representation, and we can see the proper probability distributions:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mps_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">cirq_mps_bitstring_probability</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">mps_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="o">+</span><span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">),</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hist</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">plot_state_histogram</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/c26248659ca0f672f842e69b5a1e1e33e4d6a973416e75927468443961bb9c7d.png" src="_images/c26248659ca0f672f842e69b5a1e1e33e4d6a973416e75927468443961bb9c7d.png" />
+</div>
+</div>
+<p>Let’s now look how this scales as opposed to the standard state-vector sampler, first for this GHZ example.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">widths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">]</span>
+<span class="n">statevec_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">mps_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">widths</span><span class="p">:</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sequence</span><span class="p">:</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">))</span>
+
+    <span class="n">vec_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">(</span>
+            <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">bgls</span><span class="o">.</span><span class="n">born</span><span class="o">.</span><span class="n">compute_probability_state_vector</span>
+    <span class="p">)</span>
+    
+    <span class="n">mps_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">cirq_mps_bitstring_probability</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">vec_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">statevec_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mps_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">mps_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">statevec_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;statevec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">mps_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/2ecc583d8a003b45a39bc644f545735d14b33d65b01eedf136fc502cdaa97dab.png" src="_images/2ecc583d8a003b45a39bc644f545735d14b33d65b01eedf136fc502cdaa97dab.png" />
+</div>
+</div>
+<p>We see that both the state vector and mps samplers scale exponentially in the number of qubits in the system for the case of the n-qubit ghz circuit.</p>
+<p>Now for a random circuit instead</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">widths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">22</span><span class="p">]</span>
+<span class="n">statevec_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">mps_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">widths</span><span class="p">:</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">random_circuit</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">n_moments</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">op_density</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">))</span>
+
+    <span class="n">vec_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">(</span>
+            <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">bgls</span><span class="o">.</span><span class="n">born</span><span class="o">.</span><span class="n">compute_probability_state_vector</span>
+    <span class="p">)</span>
+    
+    <span class="n">mps_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">cirq_mps_bitstring_probability</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">vec_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">statevec_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mps_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">mps_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">statevec_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;statevec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">mps_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/cf98cc6e16fe43094b2b0914d158292ba1f2e3756209855f2c55adedbf56e858.png" src="_images/cf98cc6e16fe43094b2b0914d158292ba1f2e3756209855f2c55adedbf56e858.png" />
+</div>
+</div>
+<p>We notice again the exponential runtime scaling in the state vector sampler, but now see much better scaling in the mps sampler.</p>
+<p>We see that we actually have quite poor performance for the GHZ circuit, yet farily good performance for random ones. This is explained as follows. Whereas one can describe the final ghz state very simply with a MPS, our sampling algorithm updates at each step when the state is not yet ghz, and cannot use the global simplification. In general MPS scale exponentially in the connectivity of the circuit, and a ghz state is actually <em>maximally</em> entangled, meaning we would expect the exponential runtime we observe. Instead we can seek performance improvements in large yet lowly-entangled circuits.</p>
+<p>As an example, we can examine how runtime scales as an increasing subset of a large circuit is entangled into a ghz state:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">size</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">numcnots</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+<span class="n">mps_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">numcnot</span> <span class="ow">in</span> <span class="n">numcnots</span><span class="p">:</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">numcnot</span><span class="p">:</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">))</span>
+
+    <span class="n">mps_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">cirq_mps_bitstring_probability</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mps_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">mps_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">numcnots</span><span class="p">,</span> <span class="n">mps_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/27bc86f9d7307a58a2b9517018b13a7250febe639a91205c8ec73ac1b9502901.png" src="_images/27bc86f9d7307a58a2b9517018b13a7250febe639a91205c8ec73ac1b9502901.png" />
+</div>
+</div>
+<p>To drive this home, we can take a fixed number of entangled qubits and increase the number of unentangled. We expect essentially constant runtime for the mps, despite the state vector simulator continuing to scale exponentially.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">numcnots</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">fullsizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+<span class="n">mps_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">statevec_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">fullsize</span> <span class="ow">in</span> <span class="n">fullsizes</span><span class="p">:</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">fullsize</span><span class="p">)</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fullsize</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">numcnots</span><span class="p">:</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">))</span>
+
+    <span class="n">vec_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">StateVectorSimulationState</span><span class="p">(</span>
+            <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">bgls</span><span class="o">.</span><span class="n">born</span><span class="o">.</span><span class="n">compute_probability_state_vector</span>
+    <span class="p">)</span>
+
+    <span class="n">mps_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">cirq_mps_bitstring_probability</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mps_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">mps_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">vec_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">statevec_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fullsizes</span><span class="p">,</span> <span class="n">statevec_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;statevec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fullsizes</span><span class="p">,</span> <span class="n">mps_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/047342c241c840155e033220618db7ec173f9491270e59749e08c2b41bc27fae.png" src="_images/047342c241c840155e033220618db7ec173f9491270e59749e08c2b41bc27fae.png" />
+</div>
+</div>
+<p>Conversely for a fixed amount of entanglement (i.e. 2-qubit gates), we see a modest linear scaling in runtime with the number of 1-qubit gates:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">size</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">numgates</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">30</span><span class="p">]</span>
+<span class="n">numcnot</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">mps_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">numgate</span> <span class="ow">in</span> <span class="n">numgates</span><span class="p">:</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">LineQubit</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qs</span><span class="p">)):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="c1"># entangle just a subset at beginning</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numcnot</span><span class="p">):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">CNOT</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">random_circuit</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">n_moments</span><span class="o">=</span><span class="n">numgate</span><span class="p">,</span> <span class="n">op_density</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">gate_domain</span><span class="o">=</span><span class="p">{</span><span class="n">cirq</span><span class="o">.</span><span class="n">X</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="n">cirq</span><span class="o">.</span><span class="n">Y</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="n">cirq</span><span class="o">.</span><span class="n">H</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="n">cirq</span><span class="o">.</span><span class="n">S</span><span class="p">:</span><span class="mi">1</span><span class="p">}))</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cirq</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">))</span>
+
+
+    <span class="n">mps_sim</span> <span class="o">=</span> <span class="n">bgls</span><span class="o">.</span><span class="n">Simulator</span><span class="p">(</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">quimb</span><span class="o">.</span><span class="n">MPSState</span><span class="p">(</span>
+        <span class="n">qubits</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="n">cirq</span><span class="o">.</span><span class="n">act_on</span><span class="p">,</span>
+    <span class="n">cirq_mps_bitstring_probability</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mps_sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">mps_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">numgates</span><span class="p">,</span> <span class="n">mps_times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/49d4cba29bf3c3786c933abd70af518d4c936ad1455c1d07a6e5fc4c5cffbed1.png" src="_images/49d4cba29bf3c3786c933abd70af518d4c936ad1455c1d07a6e5fc4c5cffbed1.png" />
+</div>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="qaoa_example.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Using BGLS with MPS to solve QAOA problems</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="clifford_simulation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Using BGLS on Clifford and near-Clifford circuits</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Alex Shapiro, Ryan LaRose
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Using BGLS to sample from Matrix Product State Circuits</a><ul>
+<li><a class="reference internal" href="#running-on-bgls">Running on BGLS</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>
