@@ -22,3 +22,5 @@ from bgls import born
 from bgls.optimize import optimize_for_bgls
 
 from bgls.near_clifford_solver import circuit_clifford_decomposition
+
+from bgls._version import __version__
