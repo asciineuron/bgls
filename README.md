@@ -51,3 +51,7 @@ Counter({0: 6, 3: 4})
 ## Documentation
 
 See more details and examples in the [Documentation for BGLS](https://asciineuron.github.io/bgls/).
+
+## Citing BGLS
+
+If you use BGLS in your research, please reference the [BGLS whitepaper](https://dl.acm.org/doi/10.1145/3624062.3624215) using the bibtex entry found in [`CITATION.bib`](https://asciineuron.github.io/bgls/blob/master/CITATION.bib).
